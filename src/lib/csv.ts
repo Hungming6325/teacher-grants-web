@@ -1,5 +1,5 @@
 import Papa from "papaparse"
-import { GrantRecord } from "@/types/grant"
+import { GrantRecord } from "../types/grant"
 
 type CsvRow = {
   系所?: string
