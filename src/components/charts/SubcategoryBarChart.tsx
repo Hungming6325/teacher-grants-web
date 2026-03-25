@@ -60,7 +60,7 @@ export default function SubcategoryBarChart({ data }: Props) {
               tick={{ fill: "#ffffff", fontSize: 16 }}
             />
             <Tooltip
-              formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
+              formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, ""]}
               labelFormatter={() => ""}
               contentStyle={{
                 backgroundColor: "#18304f",

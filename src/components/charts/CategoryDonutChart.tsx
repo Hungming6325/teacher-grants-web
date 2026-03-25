@@ -49,17 +49,17 @@ export default function CategoryDonutChart({ data }: Props) {
                 />
               ))}
             </Pie>
-            <Tooltip
-              formatter={(value: number) => [`$${value.toLocaleString()}`, "金額"]}
-              contentStyle={{
-                backgroundColor: "#18304f",
-                border: "1px solid rgba(148, 163, 184, 0.35)",
-                borderRadius: "12px",
-                color: "#ffffff",
-                fontSize: "15px",
-              }}
-              labelStyle={{ color: "#ffffff", fontSize: "14px" }}
-            />
+<Tooltip
+  formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, "金額"]}
+  contentStyle={{
+    backgroundColor: "#18304f",
+    border: "1px solid rgba(148, 163, 184, 0.35)",
+    borderRadius: "12px",
+    color: "#ffffff",
+    fontSize: "15px",
+  }}
+  labelStyle={{ color: "#ffffff", fontSize: "14px" }}
+/>
           </PieChart>
         </ResponsiveContainer>
       </div>
