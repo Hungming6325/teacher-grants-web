@@ -38,18 +38,24 @@ export function getCategoryAmountData(records: GrantRecord[]) {
     .sort((a, b) => b.amount - a.amount)
 }
 
-export function getSubcategoryAmountData(records: GrantRecord[], limit?) {
+export function getSubcategoryAmountData(
+  records: GrantRecord[],
+  limit?: number
+) {
   const map = new Map<string, number>()
 
   records.forEach((record) => {
-    map.set(record.subcategory, (map.get(record.subcategory) ?? 0) + record.amount)
+    const key = record.subcategory || "未分類"
+    const current = map.get(key) ?? 0
+    map.set(key, current + Number(record.amount || 0))
   })
 
-  return Array.from(map.entries())
+  const result = Array.from(map.entries())
     .map(([name, amount]) => ({
       name,
       amount,
     }))
     .sort((a, b) => b.amount - a.amount)
-    .slice(0, limit)
+
+   return typeof limit === "number" ? result.slice(0, limit) : result
 }
