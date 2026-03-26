@@ -38,7 +38,7 @@ export function getCategoryAmountData(records: GrantRecord[]) {
     .sort((a, b) => b.amount - a.amount)
 }
 
-export function getSubcategoryAmountData(records: GrantRecord[], limit = 10) {
+export function getSubcategoryAmountData(records: GrantRecord[], limit?) {
   const map = new Map<string, number>()
 
   records.forEach((record) => {

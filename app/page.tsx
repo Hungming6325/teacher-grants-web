@@ -275,7 +275,7 @@ const teachers = useMemo(() => {
         .sort((a, b) => b.amount - a.amount)
     }
 
-    return getSubcategoryAmountData(filteredRecords, 10).map((item: any) => ({
+    return getSubcategoryAmountData(filteredRecords).map((item: any) => ({
       ...item,
       percentage: totalAmount ? (Number(item.amount || 0) / totalAmount) * 100 : 0,
     }))
