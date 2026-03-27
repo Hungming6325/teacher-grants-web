@@ -346,7 +346,7 @@ const filterRatio = useMemo(() => {
                   <select
                     value={filters.year}
                     onChange={(e) => handleFilterChange("year", e.target.value)}
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2 text-sm text-white outline-none transition focus:border-cyan-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300 md:text-base"
                   >
                     {FIXED_YEARS.map((year) => (
                       <option key={year} value={year} className="text-black">
@@ -366,7 +366,7 @@ const filterRatio = useMemo(() => {
                     onChange={(e) =>
                       handleFilterChange("department", e.target.value)
                     }
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
                   >
                     <option value="" className="text-black">
                       全部系所
@@ -424,7 +424,7 @@ const filterRatio = useMemo(() => {
                             }
                           }}
                           placeholder="輸入教師姓名篩選"
-                          className="w-full rounded-xl border border-slate-400/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-slate-300/70 focus:border-emerald-300 md:text-base"
+                          className="w-full rounded-xl border border-slate-400/20 bg-white/10 px-3 py-3 text-sm text-white outline-none placeholder:text-slate-300/70 focus:border-emerald-300 md:text-base"
                         />
                       </div>
 
@@ -436,7 +436,7 @@ const filterRatio = useMemo(() => {
                             setTeacherKeyword("")
                             setTeacherDropdownOpen(false)
                           }}
-                          className="w-full rounded-xl px-3 py-2 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
+                          className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
                         >
                           全部教師
                         </button>
@@ -447,7 +447,7 @@ const filterRatio = useMemo(() => {
                               key={teacher.name}
                               type="button"
                               onClick={() => handleTeacherSelect(teacher.name)}
-                              className="w-full rounded-xl px-3 py-2 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
+                              className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
                             >
                               {teacher.name}
                             </button>
@@ -471,7 +471,7 @@ const filterRatio = useMemo(() => {
                     onChange={(e) =>
                       handleFilterChange("subcategory", e.target.value)
                     }
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2 text-sm text-white outline-none transition focus:border-violet-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-300 md:text-base"
                   >
                     <option value="" className="text-black">
                       全部項目
@@ -492,7 +492,7 @@ const filterRatio = useMemo(() => {
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="w-full rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20 md:text-base"
+                    className="w-full rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20 md:text-base"
                   >
                     重設篩選
                   </button>
