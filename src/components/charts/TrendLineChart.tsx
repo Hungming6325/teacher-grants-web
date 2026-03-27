@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -21,6 +22,7 @@ type TrendLineChartProps = {
   mode: "subcategory" | "teacher"
   selectedSubcategory: string
 }
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("zh-TW").format(value)
 }
@@ -30,10 +32,12 @@ type CustomTooltipProps = {
   payload?: Array<{
     value?: number
     dataKey?: string
+    name?: string
     color?: string
     payload?: TrendRow
   }>
   label?: string
+  activeKey?: string | null
 }
 
 const COLORS = [
@@ -54,10 +58,18 @@ function CustomTooltip({
   payload,
   label,
   mode,
-}: CustomTooltipProps & { mode: "subcategory" | "teacher" }) {
+  activeKey,
+}: CustomTooltipProps & {
+  mode: "subcategory" | "teacher"
+  activeKey?: string | null
+}) {
   if (!active || !payload || payload.length === 0) return null
 
-  const current = payload[0]
+  const current =
+    payload.find(
+      (item) =>
+        String(item.name || item.dataKey || "") === String(activeKey || "")
+    ) || payload[0]
 
   if (!current || current.value == null) return null
 
@@ -68,7 +80,8 @@ function CustomTooltip({
         className="mb-1 text-sm font-medium"
         style={{ color: current.color || "#fff" }}
       >
-        {mode === "teacher" ? "教師" : "項目"}：{String(current.dataKey || "")}
+        {mode === "teacher" ? "教師" : "項目"}：
+        {String(current.name || current.dataKey || "")}
       </div>
       <div className="text-sm text-white">
         金額：${formatCurrency(Number(current.value))}
@@ -82,6 +95,8 @@ export default function TrendLineChart({
   mode,
   selectedSubcategory,
 }: TrendLineChartProps) {
+  const [activeKey, setActiveKey] = useState<string | null>(null)
+
   const seriesKeys =
     data.length > 0
       ? Object.keys(data[0]).filter((key) => key !== "year")
@@ -116,22 +131,16 @@ export default function TrendLineChart({
               tickLine={{ stroke: "rgba(148,163,184,0.35)" }}
             />
 
-            <YAxis
-              tick={false}
-              axisLine={false}
-              tickLine={false}
-            />
+            <YAxis tick={false} axisLine={false} tickLine={false} />
 
-<Tooltip
-  shared={false}
-  content={<CustomTooltip mode={mode} />}
-/>
+            <Tooltip content={<CustomTooltip mode={mode} activeKey={activeKey} />} />
 
             {seriesKeys.map((key, index) => (
               <Line
                 key={key}
                 type="monotone"
                 dataKey={key}
+                name={key}
                 stroke={COLORS[index % COLORS.length]}
                 strokeWidth={2.5}
                 dot={{ r: 3 }}
@@ -139,12 +148,13 @@ export default function TrendLineChart({
                 isAnimationActive={true}
                 animationDuration={1600}
                 animationEasing="ease-out"
+                onMouseEnter={() => setActiveKey(key)}
+                onMouseMove={() => setActiveKey(key)}
               />
             ))}
           </LineChart>
         </ResponsiveContainer>
       </div>
-
 
       <div className="mt-4 flex justify-start">
         <div className="grid w-full grid-cols-5 gap-x-4 gap-y-2">
@@ -157,12 +167,12 @@ export default function TrendLineChart({
                 className="h-3 w-3 shrink-0 rounded-full"
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
-<span
-  className="leading-tight text-slate-200"
-  style={{ fontSize: "15px" }}
->
-  {key}
-</span>
+              <span
+                className="leading-tight text-slate-200"
+                style={{ fontSize: "15px" }}
+              >
+                {key}
+              </span>
             </div>
           ))}
         </div>

@@ -29,7 +29,7 @@ type TeacherSearchItem = {
   name: string
 }
 
-const FIXED_YEARS = ["114", "113", "112"]
+const FIXED_YEARS = ["112", "113", "114"]
 
 export default function Home() {
   const [records, setRecords] = useState<GrantRecord[]>([])
