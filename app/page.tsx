@@ -366,7 +366,7 @@ const filterRatio = useMemo(() => {
                     onChange={(e) =>
                       handleFilterChange("department", e.target.value)
                     }
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2.5 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
                   >
                     <option value="" className="text-black">
                       全部系所
