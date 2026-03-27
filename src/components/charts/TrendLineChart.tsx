@@ -127,7 +127,13 @@ export default function TrendLineChart({
       : "項目三年度趨勢"
 
   return (
-    <PanelCard className="border-fuchsia-300/15">
+    <PanelCard
+      className="border-fuchsia-300/15"
+      onClick={() => {
+        setLockedLegendKey(null)
+        setHoveredLegendKey(null)
+      }}
+    >
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold md:text-xl">{title}</h2>
 
@@ -156,15 +162,6 @@ export default function TrendLineChart({
           <LineChart
             data={data}
             margin={{ top: 16, right: 24, left: 4, bottom: 8 }}
-            onClick={(state) => {
-              const clickedOutsideChart =
-                !state || !state.activePayload || state.activePayload.length === 0
-
-              if (clickedOutsideChart) {
-                setLockedLegendKey(null)
-                setHoveredLegendKey(null)
-              }
-            }}
           >
             <CartesianGrid
               strokeDasharray="3 3"
@@ -216,7 +213,10 @@ export default function TrendLineChart({
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 flex justify-start">
+      <div
+        className="mt-4 flex justify-start"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="grid w-full grid-cols-5 gap-x-4 gap-y-2">
           {seriesKeys.map((key, index) => {
             const isActive = !activeLegendKey || activeLegendKey === key
