@@ -127,139 +127,140 @@ export default function TrendLineChart({
       : "項目三年度趨勢"
 
   return (
-    <PanelCard
-      className="border-fuchsia-300/15"
+    <div
       onClick={() => {
         setLockedLegendKey(null)
         setHoveredLegendKey(null)
       }}
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold md:text-xl">{title}</h2>
+      <PanelCard className="border-fuchsia-300/15">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold md:text-xl">{title}</h2>
 
-        {lockedLegendKey && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setLockedLegendKey(null)
-              setHoveredLegendKey(null)
-            }}
-            className="shrink-0 rounded-xl border border-slate-400/20 bg-white/5 px-3 py-1.5 text-sm text-slate-200 transition hover:bg-white/10"
-          >
-            顯示全部
-          </button>
-        )}
-      </div>
+          {lockedLegendKey && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setLockedLegendKey(null)
+                setHoveredLegendKey(null)
+              }}
+              className="shrink-0 rounded-xl border border-slate-400/20 bg-white/5 px-3 py-1.5 text-sm text-slate-200 transition hover:bg-white/10"
+            >
+              顯示全部
+            </button>
+          )}
+        </div>
 
-      <div
-        className="h-[360px] w-full"
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 16, right: 24, left: 4, bottom: 8 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="rgba(148,163,184,0.18)"
-            />
+        <div
+          className="h-[360px] w-full"
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={data}
+              margin={{ top: 16, right: 24, left: 4, bottom: 8 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(148,163,184,0.18)"
+              />
 
-            <XAxis
-              dataKey="year"
-              tick={{ fill: "#e2e8f0", fontSize: 14 }}
-              axisLine={{ stroke: "rgba(148,163,184,0.35)" }}
-              tickLine={{ stroke: "rgba(148,163,184,0.35)" }}
-            />
+              <XAxis
+                dataKey="year"
+                tick={{ fill: "#e2e8f0", fontSize: 14 }}
+                axisLine={{ stroke: "rgba(148,163,184,0.35)" }}
+                tickLine={{ stroke: "rgba(148,163,184,0.35)" }}
+              />
 
-            <YAxis tick={false} axisLine={false} tickLine={false} />
+              <YAxis tick={false} axisLine={false} tickLine={false} />
 
-            <Tooltip
-              content={
-                <CustomTooltip mode={mode} lockedLegendKey={lockedLegendKey} />
-              }
-            />
+              <Tooltip
+                content={
+                  <CustomTooltip mode={mode} lockedLegendKey={lockedLegendKey} />
+                }
+              />
 
+              {seriesKeys.map((key, index) => {
+                const isActive = !activeLegendKey || activeLegendKey === key
+                const isLockedOut = !!lockedLegendKey && lockedLegendKey !== key
+
+                return (
+                  <Line
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    name={key}
+                    stroke={COLORS[index % COLORS.length]}
+                    strokeWidth={activeLegendKey === key ? 4 : 2.5}
+                    strokeOpacity={isActive ? 1 : 0.12}
+                    hide={isLockedOut}
+                    dot={{
+                      r: activeLegendKey === key ? 4 : 3,
+                      opacity: isActive ? 1 : 0.12,
+                    }}
+                    activeDot={{ r: 6 }}
+                    connectNulls={false}
+                    isAnimationActive={true}
+                    animationDuration={1600}
+                    animationEasing="ease-out"
+                  />
+                )
+              })}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div
+          className="mt-4 flex justify-start"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="grid w-full grid-cols-5 gap-x-4 gap-y-2">
             {seriesKeys.map((key, index) => {
               const isActive = !activeLegendKey || activeLegendKey === key
-              const isLockedOut = !!lockedLegendKey && lockedLegendKey !== key
 
               return (
-                <Line
+                <button
                   key={key}
-                  type="monotone"
-                  dataKey={key}
-                  name={key}
-                  stroke={COLORS[index % COLORS.length]}
-                  strokeWidth={activeLegendKey === key ? 4 : 2.5}
-                  strokeOpacity={isActive ? 1 : 0.12}
-                  hide={isLockedOut}
-                  dot={{
-                    r: activeLegendKey === key ? 4 : 3,
-                    opacity: isActive ? 1 : 0.12,
+                  type="button"
+                  className="flex min-w-0 items-center justify-start gap-2 rounded-lg px-1 py-1 text-left transition hover:bg-white/5"
+                  onMouseEnter={() => {
+                    if (!lockedLegendKey) setHoveredLegendKey(key)
                   }}
-                  activeDot={{ r: 6 }}
-                  connectNulls={false}
-                  isAnimationActive={true}
-                  animationDuration={1600}
-                  animationEasing="ease-out"
-                />
-              )
-            })}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div
-        className="mt-4 flex justify-start"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="grid w-full grid-cols-5 gap-x-4 gap-y-2">
-          {seriesKeys.map((key, index) => {
-            const isActive = !activeLegendKey || activeLegendKey === key
-
-            return (
-              <button
-                key={key}
-                type="button"
-                className="flex min-w-0 items-center justify-start gap-2 rounded-lg px-1 py-1 text-left transition hover:bg-white/5"
-                onMouseEnter={() => {
-                  if (!lockedLegendKey) setHoveredLegendKey(key)
-                }}
-                onMouseLeave={() => {
-                  if (!lockedLegendKey) setHoveredLegendKey(null)
-                }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setLockedLegendKey((prev) => (prev === key ? null : key))
-                  setHoveredLegendKey(null)
-                }}
-              >
-                <div
-                  className="h-3 w-3 shrink-0 rounded-full"
-                  style={{
-                    backgroundColor: COLORS[index % COLORS.length],
-                    opacity: isActive ? 1 : 0.25,
+                  onMouseLeave={() => {
+                    if (!lockedLegendKey) setHoveredLegendKey(null)
                   }}
-                />
-                <span
-                  className="leading-tight"
-                  style={{
-                    fontSize: "15px",
-                    color: isActive ? "#e2e8f0" : "rgba(226,232,240,0.35)",
-                    fontWeight: lockedLegendKey === key ? 700 : 400,
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setLockedLegendKey((prev) => (prev === key ? null : key))
+                    setHoveredLegendKey(null)
                   }}
                 >
-                  {key}
-                </span>
-              </button>
-            )
-          })}
+                  <div
+                    className="h-3 w-3 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: COLORS[index % COLORS.length],
+                      opacity: isActive ? 1 : 0.25,
+                    }}
+                  />
+                  <span
+                    className="leading-tight"
+                    style={{
+                      fontSize: "15px",
+                      color: isActive ? "#e2e8f0" : "rgba(226,232,240,0.35)",
+                      fontWeight: lockedLegendKey === key ? 700 : 400,
+                    }}
+                  >
+                    {key}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
-    </PanelCard>
+      </PanelCard>
+    </div>
   )
 }
