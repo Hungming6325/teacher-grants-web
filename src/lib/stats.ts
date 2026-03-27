@@ -57,5 +57,5 @@ export function getSubcategoryAmountData(
     }))
     .sort((a, b) => b.amount - a.amount)
 
-   return typeof limit === "number" ? result.slice(0, limit) : result
+  return typeof limit === "number" ? result.slice(0, limit) : result
 }

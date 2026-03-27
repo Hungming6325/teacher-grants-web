@@ -357,15 +357,15 @@ function handleFilterChange(key: keyof ExtendedFilterState, value: string) {
   }
 
   return (
-<main className="min-h-screen bg-[#12233f] px-4 py-8 text-white md:px-6 lg:px-8">
+<main className="min-h-screen bg-[#12233f] px-4 py-4 text-white md:px-6 lg:px-8">
       <div className="relative mx-auto max-w-7xl">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.10),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_30%)] blur-3xl" />
 
         <div className="mb-8">
-          <p className="mb-3 text-sm uppercase tracking-[0.18em] text-cyan-200/90">
+          <p className="mb-2 text-xs md:text-sm uppercase tracking-wider text-cyan-200/80">
             Teacher Grants and Subsidies Analysis System
           </p>
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl xl:text-5xl">
+          <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold tracking-tight">
             教師獎補助金額分析系統
           </h1>
         </div>
@@ -383,7 +383,7 @@ function handleFilterChange(key: keyof ExtendedFilterState, value: string) {
         )}
 
         {!loading && !error && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <PanelCard className="relative z-30 overflow-visible">
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_auto]">
                 <div>
@@ -411,7 +411,7 @@ function handleFilterChange(key: keyof ExtendedFilterState, value: string) {
                     onChange={(e) =>
                       handleFilterChange("department", e.target.value)
                     }
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2.5 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
                   >
                     <option value="" className="text-black">
                       全部系所
@@ -543,7 +543,7 @@ function handleFilterChange(key: keyof ExtendedFilterState, value: string) {
               </div>
             </PanelCard>
 
-            <section className="grid gap-4 md:grid-cols-3">
+            <section className="grid gap-3 md:grid-cols-3">
               <PanelCard className="border-cyan-300/15">
                 <p className="mb-2 text-sm text-slate-200">總獎助金額</p>
                 <p className="text-2xl font-bold text-cyan-200 md:text-3xl">
@@ -577,8 +577,8 @@ function handleFilterChange(key: keyof ExtendedFilterState, value: string) {
               </PanelCard>
             </section>
 
-            <section className="grid items-start gap-6 xl:grid-cols-[0.5fr_1.5fr]">
-              <div className="space-y-4">
+            <section className="grid items-start gap-4 xl:grid-cols-[0.5fr_1.5fr]">
+              <div className="space-y-3">
                 <PanelCard className="border-cyan-300/15">
                   <h2 className="mb-2 text-lg font-semibold md:text-xl">
                     篩選後資料狀態
