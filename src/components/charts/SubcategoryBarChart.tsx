@@ -50,11 +50,11 @@ export default function SubcategoryBarChart({
   const title =
     mode === "teacher" && selectedSubcategory
       ? `${selectedSubcategory}教師金額分布`
-      : "子項目金額分布"
+      : "項目金額分布"
 
   return (
     <PanelCard className="flex h-full flex-col border-emerald-300/15">
-      <h2 className="mb-4 text-2xl font-semibold text-white">{title}</h2>
+      <h2 className="mb-4 text-lg font-semibold text-white md:text-xl">{title}</h2>
 
       <div className="w-full" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
@@ -73,9 +73,9 @@ export default function SubcategoryBarChart({
             <YAxis
               type="category"
               dataKey="name"
-              width={260}
+              width={140}
               interval={0}
-              tick={{ fill: "#ffffff", fontSize: 18, fontWeight: 600 }}
+              tick={{ fill: "#e2e8f0", fontSize: 15 }}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -104,7 +104,8 @@ export default function SubcategoryBarChart({
             <Bar
               dataKey="amount"
               radius={[0, 10, 10, 0]}
-              animationDuration={900}
+              animationDuration={1600}
+ animationEasing="ease-out"
               barSize={40}
             >
               {data.map((entry, index) => (
