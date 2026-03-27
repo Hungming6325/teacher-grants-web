@@ -346,7 +346,7 @@ const filterRatio = useMemo(() => {
                   <select
                     value={filters.year}
                     onChange={(e) => handleFilterChange("year", e.target.value)}
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2 text-sm text-white outline-none transition focus:border-cyan-300 md:text-base"
                   >
                     {FIXED_YEARS.map((year) => (
                       <option key={year} value={year} className="text-black">
@@ -366,7 +366,7 @@ const filterRatio = useMemo(() => {
                     onChange={(e) =>
                       handleFilterChange("department", e.target.value)
                     }
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
                   >
                     <option value="" className="text-black">
                       全部系所
@@ -471,7 +471,7 @@ const filterRatio = useMemo(() => {
                     onChange={(e) =>
                       handleFilterChange("subcategory", e.target.value)
                     }
-                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-300 md:text-base"
+                    className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-2 text-sm text-white outline-none transition focus:border-violet-300 md:text-base"
                   >
                     <option value="" className="text-black">
                       全部項目
@@ -492,7 +492,7 @@ const filterRatio = useMemo(() => {
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="w-full rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20 md:text-base"
+                    className="w-full rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20 md:text-base"
                   >
                     重設篩選
                   </button>
