@@ -194,42 +194,47 @@ const filterRatio = useMemo(() => {
   }, [filteredRecords, filters.subcategory, totalAmount])
 
   const trendChartData = useMemo(() => {
-    const trendSource = records.filter((record: any) => {
-      const matchDepartment =
-        !filters.department || record.department === filters.department
-      const matchTeacher =
-        !filters.teacher || record.teacher === filters.teacher
-      const matchSubcategory =
-        !filters.subcategory || record.subcategory === filters.subcategory
+  type TrendChartRow = {
+    year: string
+    [key: string]: string | number
+  }
 
-      return matchDepartment && matchTeacher && matchSubcategory
-    })
+  const trendSource = records.filter((record: any) => {
+    const matchDepartment =
+      !filters.department || record.department === filters.department
+    const matchTeacher =
+      !filters.teacher || record.teacher === filters.teacher
+    const matchSubcategory =
+      !filters.subcategory || record.subcategory === filters.subcategory
 
-    const mode = filters.subcategory ? "teacher" : "subcategory"
-    const groupedByYear = new Map<string, Record<string, string | number>>()
+    return matchDepartment && matchTeacher && matchSubcategory
+  })
 
-    FIXED_YEARS.forEach((year) => {
-      groupedByYear.set(year, { year })
-    })
+  const mode = filters.subcategory ? "teacher" : "subcategory"
+  const groupedByYear = new Map<string, TrendChartRow>()
 
-    trendSource.forEach((record: any) => {
-      if (!FIXED_YEARS.includes(String(record.year))) return
+  FIXED_YEARS.forEach((year) => {
+    groupedByYear.set(year, { year })
+  })
 
-      const year = String(record.year)
-      const lineKey =
-        mode === "teacher"
-          ? String(record.teacher || "未分類教師")
-          : String(record.subcategory || "未分類項目")
+  trendSource.forEach((record: any) => {
+    if (!FIXED_YEARS.includes(String(record.year))) return
 
-      const currentYearRow = groupedByYear.get(year) || { year }
-      const currentValue = Number(currentYearRow[lineKey] || 0)
+    const year = String(record.year)
+    const lineKey =
+      mode === "teacher"
+        ? String(record.teacher || "未分類教師")
+        : String(record.subcategory || "未分類項目")
 
-      currentYearRow[lineKey] = currentValue + Number(record.amount || 0)
-      groupedByYear.set(year, currentYearRow)
-    })
+    const currentYearRow = groupedByYear.get(year) ?? { year }
+    const currentValue = Number(currentYearRow[lineKey] || 0)
 
-    return FIXED_YEARS.map((year) => groupedByYear.get(year) || { year })
-  }, [records, filters.department, filters.teacher, filters.subcategory])
+    currentYearRow[lineKey] = currentValue + Number(record.amount || 0)
+    groupedByYear.set(year, currentYearRow)
+  })
+
+  return FIXED_YEARS.map((year) => groupedByYear.get(year) ?? { year })
+}, [records, filters.department, filters.teacher, filters.subcategory])
 
   function handleFilterChange(key: keyof ExtendedFilterState, value: string) {
     setFilters((prev) => {
