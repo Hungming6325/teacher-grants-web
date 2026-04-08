@@ -25,16 +25,16 @@ type Props = {
 }
 
 const COLORS = [
-  "#22d3ee",
-  "#a855f7",
-  "#34d399",
-  "#f472b6",
-  "#60a5fa",
+  "#4fd1c5",
   "#f59e0b",
+  "#60a5fa",
+  "#f472b6",
+  "#34d399",
+  "#f97316",
   "#2dd4bf",
-  "#c084fc",
-  "#4ade80",
+  "#818cf8",
   "#fb7185",
+  "#38bdf8",
 ]
 
 export default function SubcategoryBarChart({
@@ -44,69 +44,73 @@ export default function SubcategoryBarChart({
 }: Props) {
   const chartHeight =
     mode === "teacher"
-      ? Math.max(620, data.length * 58)
-      : Math.max(620, data.length * 52)
+      ? Math.max(440, data.length * 46)
+      : Math.max(440, data.length * 40)
 
   const title =
     mode === "teacher" && selectedSubcategory
-      ? `${selectedSubcategory}教師金額分布`
-      : "項目金額分布"
+      ? `${selectedSubcategory}教師排序`
+      : "次項目金額排序"
 
   return (
-    <PanelCard className="flex h-full flex-col border-emerald-300/15">
-      <h2 className="mb-4 text-lg font-semibold text-white md:text-xl">{title}</h2>
+    <PanelCard className="min-w-0 border-emerald-300/10">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-white md:text-xl">{title}</h2>
+        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+          {data.length} 筆
+        </span>
+      </div>
 
-      <div className="w-full" style={{ height: chartHeight }}>
+      <div className="min-w-0 w-full" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
             layout="vertical"
-            margin={{ top: 12, right: 12, left: 8, bottom: 12 }}
-            barCategoryGap="22%"
+            margin={{ top: 10, right: 12, left: 6, bottom: 10 }}
+            barCategoryGap="20%"
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#314158" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
             <XAxis
               type="number"
-              tick={{ fill: "#ffffff", fontSize: 16 }}
-              tickFormatter={(value) => value.toLocaleString()}
+              tick={{ fill: "#cbd5e1", fontSize: 12 }}
+              tickFormatter={(value) => Number(value).toLocaleString()}
+              axisLine={false}
+              tickLine={false}
             />
             <YAxis
               type="category"
               dataKey="name"
-              width={140}
+              width={160}
               interval={0}
-              tick={{ fill: "#e2e8f0", fontSize: 15 }}
+              tick={{ fill: "#e2e8f0", fontSize: 13 }}
+              axisLine={false}
+              tickLine={false}
             />
             <Tooltip
+              cursor={{ fill: "rgba(148, 163, 184, 0.08)" }}
               content={({ active, payload }) => {
-                if (!active || !payload || !payload.length) return null
+                if (!active || !payload?.length) return null
 
-                const item = payload[0]?.payload
-                const amount = Number(item?.amount ?? 0)
-                const percentage = Number(item?.percentage ?? 0)
+                const item = payload[0]?.payload as ChartItem
 
                 return (
-                  <div
-                    className="rounded-2xl border border-slate-300/30 bg-[#18304f] px-4 py-3 shadow-xl"
-                    style={{ minWidth: 180 }}
-                  >
-                    <p className="text-lg font-bold text-white">
-                      金額：${amount.toLocaleString()}
+                  <div className="rounded-2xl border border-white/10 bg-slate-950/90 px-4 py-3 shadow-2xl">
+                    <p className="text-sm text-slate-300">{item.name}</p>
+                    <p className="mt-1 text-lg font-semibold text-white">
+                      NT$ {item.amount.toLocaleString()}
                     </p>
-                    <p className="mt-1 text-base font-semibold text-cyan-200">
-                      占比：{percentage.toFixed(2)}%
+                    <p className="text-sm text-emerald-300">
+                      佔比 {Number(item.percentage ?? 0).toFixed(2)}%
                     </p>
                   </div>
                 )
               }}
-              cursor={{ fill: "rgba(148, 163, 184, 0.10)" }}
             />
             <Bar
               dataKey="amount"
-              radius={[0, 10, 10, 0]}
-              animationDuration={1600}
- animationEasing="ease-out"
-              barSize={40}
+              radius={[0, 12, 12, 0]}
+              animationDuration={1000}
+              barSize={28}
             >
               {data.map((entry, index) => (
                 <Cell

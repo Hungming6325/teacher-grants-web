@@ -13,22 +13,24 @@ type Props = {
 }
 
 const COLORS = [
-  "#22d3ee",
-  "#a855f7",
-  "#34d399",
-  "#f472b6",
-  "#60a5fa",
+  "#4fd1c5",
   "#f59e0b",
-  "#2dd4bf",
-  "#c084fc",
+  "#60a5fa",
+  "#f472b6",
+  "#34d399",
+  "#f97316",
+  "#818cf8",
+  "#fb7185",
 ]
 
 export default function CategoryDonutChart({ data }: Props) {
   return (
-    <PanelCard className="flex h-full flex-col border-fuchsia-300/15">
-      <h2 className="mb-4 text-2xl font-semibold text-white">項目金額分布</h2>
+    <PanelCard className="min-w-0 border-white/10">
+      <h2 className="mb-5 text-lg font-semibold text-white md:text-xl">
+        項目金額分布
+      </h2>
 
-      <div className="h-[420px] w-full">
+      <div className="min-w-0 h-[360px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -36,9 +38,9 @@ export default function CategoryDonutChart({ data }: Props) {
               dataKey="amount"
               nameKey="name"
               cx="50%"
-              cy="46%"
-              innerRadius={85}
-              outerRadius={150}
+              cy="45%"
+              innerRadius={76}
+              outerRadius={126}
               paddingAngle={3}
               animationDuration={900}
             >
@@ -49,38 +51,38 @@ export default function CategoryDonutChart({ data }: Props) {
                 />
               ))}
             </Pie>
-<Tooltip
-  formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, "金額"]}
-  contentStyle={{
-    backgroundColor: "#18304f",
-    border: "1px solid rgba(148, 163, 184, 0.35)",
-    borderRadius: "12px",
-    color: "#ffffff",
-    fontSize: "15px",
-  }}
-  labelStyle={{ color: "#ffffff", fontSize: "14px" }}
-/>
+            <Tooltip
+              formatter={(value) => [`NT$ ${Number(value ?? 0).toLocaleString()}`, "金額"]}
+              contentStyle={{
+                backgroundColor: "rgba(2, 6, 23, 0.95)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "18px",
+                color: "#ffffff",
+                fontSize: "14px",
+              }}
+              labelStyle={{ color: "#ffffff", fontSize: "14px" }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-2 grid gap-3">
+      <div className="mt-3 grid gap-2">
         {data.map((item, index) => (
           <div
             key={item.name}
-            className="flex items-center justify-between rounded-xl bg-white/6 px-4 py-3 text-base"
+            className="flex items-center justify-between rounded-2xl border border-white/6 bg-white/[0.04] px-4 py-3"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <span
                 className="inline-block h-3.5 w-3.5 rounded-full"
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
-              <span className="text-lg font-medium text-slate-100">
+              <span className="truncate text-sm font-medium text-slate-100">
                 {item.name}
               </span>
             </div>
-            <span className="text-lg font-semibold text-slate-100">
-              ${item.amount.toLocaleString()}
+            <span className="text-sm font-semibold text-slate-200">
+              NT$ {item.amount.toLocaleString()}
             </span>
           </div>
         ))}

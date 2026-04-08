@@ -52,7 +52,7 @@ function describeArc(
 export default function FundingGauge({
   value,
   maxValue,
-  title = "總獎助金額儀表板",
+  title = "年度金額涵蓋率",
 }: Props) {
   const safeMax = maxValue <= 0 ? 1 : maxValue
   const ratio = Math.max(0, Math.min(value / safeMax, 1))
@@ -69,11 +69,11 @@ export default function FundingGauge({
   const valueArc = describeArc(cx, cy, radius, startAngle, pointerAngle)
 
   return (
-    <PanelCard className="border-cyan-400/15">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
-        <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-300">
-          {Math.round(ratio * 100)}%
+    <PanelCard className="min-w-0 border-cyan-400/10">
+      <div className="mb-5 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-white md:text-xl">{title}</h2>
+        <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-200">
+          {(ratio * 100).toFixed(1)}%
         </span>
       </div>
 
@@ -86,9 +86,9 @@ export default function FundingGauge({
             </linearGradient>
 
             <linearGradient id="gaugeValue" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#22d3ee" />
-              <stop offset="50%" stopColor="#a855f7" />
-              <stop offset="100%" stopColor="#34d399" />
+              <stop offset="0%" stopColor="#4fd1c5" />
+              <stop offset="50%" stopColor="#60a5fa" />
+              <stop offset="100%" stopColor="#f59e0b" />
             </linearGradient>
 
             <filter id="glow">
@@ -141,7 +141,7 @@ export default function FundingGauge({
                   textAnchor="middle"
                   dominantBaseline="middle"
                 >
-                  {Math.round(safeMax * tick).toLocaleString()}
+                  {Math.round((safeMax * tick) / 10000).toLocaleString()}萬
                 </text>
               </g>
             )
@@ -168,10 +168,10 @@ export default function FundingGauge({
         </svg>
 
         <div className="pointer-events-none absolute bottom-2 left-1/2 w-full max-w-[260px] -translate-x-1/2 text-center">
-          <p className="mb-1 text-sm text-slate-400">目前總金額</p>
-          <p className="text-4xl font-bold text-cyan-400">
-            $
-            <CountUp end={value} duration={1.0} separator="," decimals={0} />
+          <p className="mb-1 text-sm text-slate-400">目前篩選總額</p>
+          <p className="text-4xl font-bold text-cyan-300">
+            NT$
+            <CountUp end={value} duration={1} separator="," decimals={0} />
           </p>
         </div>
       </div>
