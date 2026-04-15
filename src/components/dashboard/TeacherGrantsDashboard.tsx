@@ -11,6 +11,7 @@ import {
 import CountUp from "react-countup"
 import SubcategoryBarChart from "../charts/SubcategoryBarChart"
 import TrendLineChart from "../charts/TrendLineChart"
+import DashboardTabs from "../ui/DashboardTabs"
 import PanelCard from "../ui/PanelCard"
 import {
   DEFAULT_FILTERS,
@@ -226,13 +227,17 @@ export default function TeacherGrantsDashboard({ records }: Props) {
       <div className="relative mx-auto max-w-7xl">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.10),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_30%)] blur-3xl" />
 
-        <div className="mb-8">
-          <p className="mb-2 text-xs uppercase tracking-wider text-cyan-200/80 md:text-sm">
-            Teacher Grants and Subsidies Analysis System
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl xl:text-4xl">
-            教師獎補助分析儀表板
-          </h1>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="mb-2 text-xs uppercase tracking-wider text-cyan-200/80 md:text-sm">
+              Teacher Grants and Subsidies Analysis System
+            </p>
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl xl:text-4xl">
+              教師獎補助分析儀表板
+            </h1>
+          </div>
+
+          <DashboardTabs />
         </div>
 
         <div className="space-y-4">
