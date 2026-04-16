@@ -64,6 +64,15 @@ type TrendDatum = {
   internalCoauthorPapers: number
 }
 
+type ChartTooltipProps = {
+  active?: boolean
+  payload?: Array<{
+    name?: string
+    value?: number | string
+  }>
+  label?: string | number
+}
+
 const CHART_COLORS = [
   "#4fd1c5",
   "#60a5fa",
@@ -74,6 +83,31 @@ const CHART_COLORS = [
   "#fb7185",
   "#22d3ee",
 ]
+
+function CountOnlyTooltip({ active, payload }: ChartTooltipProps) {
+  if (!active || !payload?.length) return null
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[rgba(2,6,23,0.92)] px-3 py-2 text-sm text-slate-50 shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
+      {payload[0]?.value}篇
+    </div>
+  )
+}
+
+function TrendTooltip({ active, payload, label }: ChartTooltipProps) {
+  if (!active || !payload?.length) return null
+
+  const item = payload[0]
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[rgba(2,6,23,0.92)] px-4 py-3 text-sm text-slate-50 shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
+      <div className="font-semibold text-white">{label}年</div>
+      <div className="mt-1 text-slate-100">
+        {item?.name}: {item?.value}篇
+      </div>
+    </div>
+  )
+}
 
 function SummaryCard({ title, value, accent }: SummaryCardProps) {
   return (
@@ -129,11 +163,8 @@ function TrendChart({ data }: { data: TrendDatum[] }) {
               width={40}
             />
             <Tooltip
-              formatter={(value, name) => {
-                const seriesItem = series.find((item) => item.key === name)
-                return [value, seriesItem?.label ?? String(name)]
-              }}
-              labelFormatter={(label) => `${label} 年`}
+              shared={false}
+              content={<TrendTooltip />}
               contentStyle={{
                 backgroundColor: "rgba(2, 6, 23, 0.92)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -211,10 +242,7 @@ function CategoryDistributionChart({
               tickLine={false}
             />
             <Tooltip
-              formatter={(value) => `${value} 篇`}
-              labelFormatter={() => ""}
-              itemStyle={{ color: "#f8fafc" }}
-              labelStyle={{ color: "#f8fafc" }}
+              content={<CountOnlyTooltip />}
               cursor={{ fill: "rgba(148, 163, 184, 0.08)" }}
               contentStyle={{
                 backgroundColor: "rgba(2, 6, 23, 0.92)",
@@ -288,10 +316,7 @@ function CollaborationChart({
                 tickLine={false}
               />
               <Tooltip
-                formatter={(value) => `${value} 篇`}
-                labelFormatter={() => ""}
-                itemStyle={{ color: "#f8fafc" }}
-                labelStyle={{ color: "#f8fafc" }}
+                content={<CountOnlyTooltip />}
                 cursor={{ fill: "rgba(148, 163, 184, 0.08)" }}
                 contentStyle={{
                   backgroundColor: "rgba(2, 6, 23, 0.92)",
