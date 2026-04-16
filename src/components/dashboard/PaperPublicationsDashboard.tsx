@@ -67,6 +67,7 @@ type TrendDatum = {
 type ChartTooltipProps = {
   active?: boolean
   payload?: Array<{
+    color?: string
     name?: string
     value?: number | string
   }>
@@ -100,7 +101,10 @@ function TrendTooltip({ active, payload, label }: ChartTooltipProps) {
   const item = payload[0]
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[rgba(2,6,23,0.92)] px-4 py-3 text-sm text-slate-50 shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
+    <div
+      className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-slate-50 shadow-[0_16px_40px_rgba(0,0,0,0.28)]"
+      style={{ backgroundColor: item?.color ?? "rgba(2,6,23,0.92)" }}
+    >
       <div className="font-semibold text-white">{label}年</div>
       <div className="mt-1 text-slate-100">
         {item?.name}: {item?.value}篇
