@@ -77,6 +77,7 @@ function splitJournalCategories(value: string | undefined) {
   return cleanText(value)
     .split(",")
     .map((item) => cleanText(item))
+    .map((item) => (item === "SCI" ? "SCIE" : item))
     .filter(Boolean)
 }
 
