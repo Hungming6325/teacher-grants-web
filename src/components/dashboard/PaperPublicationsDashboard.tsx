@@ -30,6 +30,7 @@ import {
   getPaperDepartments,
   getPaperJournalCategories,
   getPaperSchoolYears,
+  getSsciScieBucketCounts,
   getPaperTeachers,
   getPaperTrendSeries,
   getPublicationCountByCategory,
@@ -62,16 +63,37 @@ type TrendDatum = {
   correspondingAuthorPapers: number
   firstOrCorrespondingPapers: number
   internalCoauthorPapers: number
+  ssciOnlyPapers: number
+  scieOnlyPapers: number
+  ssciAndSciePapers: number
 }
 
 type ChartTooltipProps = {
   active?: boolean
   payload?: Array<{
     color?: string
+    dataKey?: string
     name?: string
     value?: number | string
   }>
   label?: string | number
+}
+
+type TrendSeriesKey =
+  | "totalPapers"
+  | "firstAuthorPapers"
+  | "correspondingAuthorPapers"
+  | "firstOrCorrespondingPapers"
+  | "internalCoauthorPapers"
+  | "ssciOnlyPapers"
+  | "scieOnlyPapers"
+  | "ssciAndSciePapers"
+
+type TrendDotProps = {
+  cx?: number
+  cy?: number
+  fill?: string
+  stroke?: string
 }
 
 const CHART_COLORS = [
@@ -95,19 +117,38 @@ function CountOnlyTooltip({ active, payload }: ChartTooltipProps) {
   )
 }
 
-function TrendTooltip({ active, payload, label }: ChartTooltipProps) {
+function TrendTooltip({
+  active,
+  payload,
+  label,
+  hoveredSeriesKey,
+  selectedSeriesKey,
+}: ChartTooltipProps & {
+  hoveredSeriesKey: TrendSeriesKey | null
+  selectedSeriesKey: TrendSeriesKey | null
+}) {
   if (!active || !payload?.length) return null
 
-  const item = payload[0]
+  const targetSeriesKey = hoveredSeriesKey ?? selectedSeriesKey
+  const items = payload
+    .filter((item) => item.name && item.value !== undefined && item.value !== null)
+    .filter((item) =>
+      targetSeriesKey ? item.dataKey === targetSeriesKey : payload.length === 1
+    )
+
+  if (!items.length) return null
 
   return (
-    <div
-      className="rounded-2xl border border-white/10 px-4 py-3 text-sm text-slate-50 shadow-[0_16px_40px_rgba(0,0,0,0.28)]"
-      style={{ backgroundColor: item?.color ?? "rgba(2,6,23,0.92)" }}
-    >
+    <div className="rounded-2xl border border-white/10 bg-[rgba(2,6,23,0.92)] px-4 py-3 text-sm text-slate-50 shadow-[0_16px_40px_rgba(0,0,0,0.28)]">
       <div className="font-semibold text-white">{label}年</div>
-      <div className="mt-1 text-slate-100">
-        {item?.name}: {item?.value}篇
+      <div className="mt-2 space-y-1.5 text-slate-100">
+        {items.map((item) => (
+          <div key={`${String(item.dataKey)}-${item.name}`}>
+            <span style={{ color: item.color ?? "#e2e8f0" }}>
+              {item.name}: {item.value}篇
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -131,6 +172,16 @@ function SummaryCard({ title, value, accent }: SummaryCardProps) {
 }
 
 function TrendChart({ data }: { data: TrendDatum[] }) {
+  const [hoveredSeriesKey, setHoveredSeriesKey] = useState<TrendSeriesKey | null>(
+    null
+  )
+  const [selectedSeriesKey, setSelectedSeriesKey] =
+    useState<TrendSeriesKey | null>(null)
+
+  function toggleSeries(key: TrendSeriesKey) {
+    setSelectedSeriesKey((current) => (current === key ? null : key))
+  }
+
   const series = [
     { key: "totalPapers", label: "去重後論文篇數", color: "#4fd1c5" },
     { key: "firstAuthorPapers", label: "第一作者篇數", color: "#60a5fa" },
@@ -141,17 +192,33 @@ function TrendChart({ data }: { data: TrendDatum[] }) {
       color: "#f472b6",
     },
     { key: "internalCoauthorPapers", label: "校內合著篇數", color: "#34d399" },
-  ]
+    { key: "ssciOnlyPapers", label: "SSCI only", color: "#38bdf8" },
+    { key: "scieOnlyPapers", label: "SCIE only", color: "#f59e0b" },
+    { key: "ssciAndSciePapers", label: "SSCI + SCIE", color: "#a78bfa" },
+  ] satisfies Array<{ key: TrendSeriesKey; label: string; color: string }>
 
   return (
     <PanelCard className="min-w-0 border-cyan-300/12">
-      <h2 className="mb-4 text-lg font-semibold text-white md:text-xl">
-        近三年趨勢
-      </h2>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <h2 className="text-lg font-semibold text-white md:text-xl">近三年趨勢</h2>
+        {selectedSeriesKey ? (
+          <button
+            type="button"
+            onClick={() => setSelectedSeriesKey(null)}
+            className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-100 transition hover:bg-white/10"
+          >
+            清除選項
+          </button>
+        ) : null}
+      </div>
 
       <div className="min-w-0 h-[360px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+          <LineChart
+            data={data}
+            margin={{ top: 10, right: 12, left: 0, bottom: 0 }}
+            onMouseLeave={() => setHoveredSeriesKey(null)}
+          >
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
             <XAxis
               dataKey="year"
@@ -168,7 +235,14 @@ function TrendChart({ data }: { data: TrendDatum[] }) {
             />
             <Tooltip
               shared={false}
-              content={<TrendTooltip />}
+              trigger="hover"
+              cursor={false}
+              content={
+                <TrendTooltip
+                  hoveredSeriesKey={hoveredSeriesKey}
+                  selectedSeriesKey={selectedSeriesKey}
+                />
+              }
               contentStyle={{
                 backgroundColor: "rgba(2, 6, 23, 0.92)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -180,18 +254,73 @@ function TrendChart({ data }: { data: TrendDatum[] }) {
               <Line
                 key={item.key}
                 type="monotone"
+                hide={selectedSeriesKey !== null && selectedSeriesKey !== item.key}
                 dataKey={item.key}
                 name={item.label}
                 stroke={item.color}
-                strokeWidth={3}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
+                strokeWidth={selectedSeriesKey === item.key ? 4 : 3}
+                tabIndex={-1}
+                focusable="false"
+                dot={(props: TrendDotProps) => {
+                  if (props.cx == null || props.cy == null) return null
+
+                  return (
+                    <g>
+                      <circle
+                        cx={props.cx}
+                        cy={props.cy}
+                        r={4}
+                        fill={props.fill ?? item.color}
+                        stroke={item.color}
+                        strokeWidth={0}
+                        tabIndex={-1}
+                        focusable="false"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => toggleSeries(item.key)}
+                        style={{ cursor: "pointer" }}
+                      />
+                      <circle
+                        cx={props.cx}
+                        cy={props.cy}
+                        r={12}
+                        fill="transparent"
+                        tabIndex={-1}
+                        focusable="false"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onMouseEnter={() => setHoveredSeriesKey(item.key)}
+                        onMouseLeave={() => setHoveredSeriesKey(null)}
+                        onClick={() => toggleSeries(item.key)}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </g>
+                  )
+                }}
+                activeDot={(props: TrendDotProps) => {
+                  if (props.cx == null || props.cy == null) return null
+
+                  return (
+                    <circle
+                      cx={props.cx}
+                      cy={props.cy}
+                      r={6}
+                      fill={item.color}
+                      stroke={item.color}
+                      strokeWidth={0}
+                      tabIndex={-1}
+                      focusable="false"
+                      style={{ pointerEvents: "none" }}
+                    />
+                  )
+                }}
+                onClick={() => toggleSeries(item.key)}
+                style={{ cursor: "pointer" }}
                 animationDuration={900}
               />
             ))}
           </LineChart>
         </ResponsiveContainer>
       </div>
+
     </PanelCard>
   )
 }
@@ -217,7 +346,7 @@ function CategoryDistributionChart({
             onClick={() => onSelectCategory("")}
             className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-white/10"
           >
-            清除分類
+            清除選項
           </button>
         ) : null}
       </div>
@@ -526,6 +655,11 @@ export default function PaperPublicationsDashboard({ records }: Props) {
     [filteredPublications]
   )
 
+  const ssciScieBucketCounts = useMemo(
+    () => getSsciScieBucketCounts(filteredPublications),
+    [filteredPublications]
+  )
+
   const trendSeries = useMemo(
     () => getPaperTrendSeries(filteredPublications),
     [filteredPublications]
@@ -773,11 +907,26 @@ export default function PaperPublicationsDashboard({ records }: Props) {
             </div>
           </PanelCard>
 
-          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
               title="去重後論文篇數"
               value={filteredPublications.length}
               accent="#4fd1c5"
+            />
+            <SummaryCard
+              title="SSCI only"
+              value={ssciScieBucketCounts.ssciOnly}
+              accent="#38bdf8"
+            />
+            <SummaryCard
+              title="SCIE only"
+              value={ssciScieBucketCounts.scieOnly}
+              accent="#f59e0b"
+            />
+            <SummaryCard
+              title="SSCI + SCIE"
+              value={ssciScieBucketCounts.both}
+              accent="#a78bfa"
             />
             <SummaryCard
               title="第一作者篇數"

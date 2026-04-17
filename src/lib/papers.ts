@@ -257,6 +257,30 @@ export function getPublicationCountByCategory(publications: PaperPublication[]) 
     .sort((a, b) => b.value - a.value)
 }
 
+export function getSsciScieBucketCounts(publications: PaperPublication[]) {
+  return publications.reduce(
+    (counts, publication) => {
+      const hasSsci = publication.journalCategories.includes("SSCI")
+      const hasScie = publication.journalCategories.includes("SCIE")
+
+      if (hasSsci && hasScie) {
+        counts.both += 1
+      } else if (hasSsci) {
+        counts.ssciOnly += 1
+      } else if (hasScie) {
+        counts.scieOnly += 1
+      }
+
+      return counts
+    },
+    {
+      ssciOnly: 0,
+      scieOnly: 0,
+      both: 0,
+    }
+  )
+}
+
 export function getPublicationCountByCountry(
   publications: PaperPublication[],
   limit = 10
@@ -299,6 +323,21 @@ export function getPaperTrendSeries(publications: PaperPublication[]) {
     const internalCoauthorPapers = yearPublications.filter(
       (publication) => publication.hasInternalCoauthor
     ).length
+    const ssciOnlyPapers = yearPublications.filter((publication) => {
+      const hasSsci = publication.journalCategories.includes("SSCI")
+      const hasScie = publication.journalCategories.includes("SCIE")
+      return hasSsci && !hasScie
+    }).length
+    const scieOnlyPapers = yearPublications.filter((publication) => {
+      const hasSsci = publication.journalCategories.includes("SSCI")
+      const hasScie = publication.journalCategories.includes("SCIE")
+      return !hasSsci && hasScie
+    }).length
+    const ssciAndSciePapers = yearPublications.filter((publication) => {
+      const hasSsci = publication.journalCategories.includes("SSCI")
+      const hasScie = publication.journalCategories.includes("SCIE")
+      return hasSsci && hasScie
+    }).length
 
     return {
       year,
@@ -307,6 +346,9 @@ export function getPaperTrendSeries(publications: PaperPublication[]) {
       correspondingAuthorPapers,
       firstOrCorrespondingPapers,
       internalCoauthorPapers,
+      ssciOnlyPapers,
+      scieOnlyPapers,
+      ssciAndSciePapers,
     }
   })
 }
