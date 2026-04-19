@@ -90,11 +90,11 @@ export function parseTeachingCsv(csvText: string): TeachingRecord[] {
       const category2 = getRowValueByIndex(row, 3)
       const category3 = normalizeCategory3(category2, getRowValueByIndex(row, 4))
       const outcomeSummary = getRowValueByIndex(row, 5)
-      const department = getRowValueByIndex(row, 7)
-      const teacherName = getRowValueByIndex(row, 8)
-      const sharePercent = parseNumber(getRowValueByIndex(row, 9))
-      const points = parseNumber(getRowValueByIndex(row, 10))
-      const amount = parseNumber(getRowValueByIndex(row, 11))
+      const department = getRowValueByIndex(row, 6)
+      const teacherName = getRowValueByIndex(row, 7)
+      const sharePercent = parseNumber(getRowValueByIndex(row, 8))
+      const points = parseNumber(getRowValueByIndex(row, 9))
+      const amount = parseNumber(getRowValueByIndex(row, 10))
 
       return {
         applicationId,
