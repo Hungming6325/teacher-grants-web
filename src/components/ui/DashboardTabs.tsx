@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 const LINKS = [
   { href: "/", label: "獎補助分析" },
   { href: "/papers", label: "論文發表" },
+  { href: "/teaching", label: "教學精進" },
 ]
 
 export default function DashboardTabs() {
@@ -20,7 +21,7 @@ export default function DashboardTabs() {
           <Link
             key={link.href}
             href={link.href}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+            className={`rounded-full px-4 py-2 text-base font-medium transition ${
               isActive
                 ? "bg-cyan-300/15 text-cyan-100"
                 : "text-slate-300 hover:bg-white/8 hover:text-white"

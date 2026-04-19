@@ -746,7 +746,7 @@ export default function PaperPublicationsDashboard({ records }: Props) {
               Publications Analytic Dashboard
             </p>
             <h1 className="text-2xl font-bold tracking-tight md:text-3xl xl:text-4xl">
-              期刊論文發表概況
+              期刊論文發表儀錶板
             </h1>
           </div>
 
