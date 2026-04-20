@@ -333,6 +333,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
     category2: "",
     category3: "",
   })
+  const [selectedDepartment, setSelectedDepartment] = useState("")
   const [showDetails, setShowDetails] = useState(false)
   const [showTeacherAmountDistribution, setShowTeacherAmountDistribution] = useState(false)
 
@@ -443,6 +444,15 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
 
   const summary = useMemo(() => getTeachingSummary(scopedRecords), [scopedRecords])
 
+  const effectiveDepartmentSelection = useMemo(
+    () =>
+      selectedDepartment &&
+      scopedRecords.some((record) => record.department === selectedDepartment)
+        ? selectedDepartment
+        : "",
+    [scopedRecords, selectedDepartment]
+  )
+
   const departmentDistribution = useMemo(
     () =>
       getTopDepartmentsByPoints(scopedRecords, 999).map((item) => ({
@@ -453,26 +463,39 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
     [scopedRecords]
   )
 
+  const detailScopedRecords = useMemo(
+    () =>
+      effectiveDepartmentSelection
+        ? scopedRecords.filter(
+            (record) => record.department === effectiveDepartmentSelection
+          )
+        : scopedRecords,
+    [effectiveDepartmentSelection, scopedRecords]
+  )
+
   const collaborations = useMemo(
     () =>
-      getTeachingCollaborations(scopedRecords).map((item) => ({
+      getTeachingCollaborations(detailScopedRecords).map((item) => ({
         name: item.pair,
         count: item.count,
         points: item.points,
       })),
-    [scopedRecords]
+    [detailScopedRecords]
   )
 
   const detailRows = useMemo(
-    () => getTeachingApplicationRows(scopedRecords).slice(0, 12),
-    [scopedRecords]
+    () => getTeachingApplicationRows(detailScopedRecords).slice(0, 12),
+    [detailScopedRecords]
   )
 
   const teacherAmountDistribution = useMemo(() => {
     const totals = new Map<string, number>()
-    const totalAmount = summary.totalAmount
+    const totalAmount = detailScopedRecords.reduce(
+      (sum, record) => sum + record.amount,
+      0
+    )
 
-    scopedRecords.forEach((record) => {
+    detailScopedRecords.forEach((record) => {
       totals.set(
         record.teacherName,
         (totals.get(record.teacherName) ?? 0) + record.amount
@@ -486,7 +509,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
         percentage: totalAmount > 0 ? (amount / totalAmount) * 100 : 0,
       }))
       .sort((a, b) => b.amount - a.amount)
-  }, [scopedRecords, summary.totalAmount])
+  }, [detailScopedRecords])
 
   function handleFilterChange(key: keyof TeachingFilters, value: string) {
     setFilters((current) => {
@@ -505,6 +528,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
   function resetFilters() {
     setFilters(DEFAULT_TEACHING_FILTERS)
     setSelection({ category1: "", category2: "", category3: "" })
+    setSelectedDepartment("")
     setShowDetails(false)
   }
 
@@ -757,6 +781,19 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
               title="系所點數分布"
               data={departmentDistribution}
               accent="#f59e0b"
+              action={
+                effectiveDepartmentSelection ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDepartment("")}
+                    className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-100 transition hover:bg-white/10"
+                  >
+                    清除選項
+                  </button>
+                ) : null
+              }
+              onSelect={setSelectedDepartment}
+              selectedName={effectiveDepartmentSelection}
               useCodeLabel={false}
             />
           </div>
