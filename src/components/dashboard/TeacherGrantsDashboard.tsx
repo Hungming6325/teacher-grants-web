@@ -41,10 +41,19 @@ type TeacherSearchItem = {
   name: string
 }
 
+function formatAmount(value: number) {
+  return `${value.toLocaleString()}元`
+}
+
+function formatPercentage(value: number) {
+  return `(${value.toFixed(2)}%)`
+}
+
 export default function TeacherGrantsDashboard({ records }: Props) {
   const [filters, setFilters] = useState<GrantFilters>(DEFAULT_FILTERS)
   const [teacherKeyword, setTeacherKeyword] = useState("")
   const [teacherDropdownOpen, setTeacherDropdownOpen] = useState(false)
+  const [showTeacherAmountDistribution, setShowTeacherAmountDistribution] = useState(false)
   const teacherBoxRef = useRef<HTMLDivElement | null>(null)
 
   const teacherSearch = useDeferredValue(teacherKeyword)
@@ -139,6 +148,13 @@ export default function TeacherGrantsDashboard({ records }: Props) {
       percentage: getShareAmount(item.amount, totalAmount) * 100,
     }))
   }, [filteredRecords, filters.subcategory, totalAmount])
+
+  const teacherAmountDistribution = useMemo(() => {
+    return getTeacherAmountData(filteredRecords).map((item) => ({
+      ...item,
+      percentage: getShareAmount(item.amount, totalAmount) * 100,
+    }))
+  }, [filteredRecords, totalAmount])
 
   const trendSourceRecords = useMemo(() => {
     return records.filter((record) => {
@@ -462,6 +478,57 @@ export default function TeacherGrantsDashboard({ records }: Props) {
               selectedSubcategory={filters.subcategory}
             />
           </section>
+
+          <PanelCard className="border-white/10">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-white md:text-xl">教師金額分布</h2>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowTeacherAmountDistribution((current) => !current)
+                  }
+                  className="rounded-2xl border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-xs text-cyan-100 transition hover:bg-cyan-300/15"
+                >
+                  {showTeacherAmountDistribution
+                    ? "收合教師金額分布"
+                    : "顯示教師金額分布"}
+                </button>
+              </div>
+            </div>
+
+            {showTeacherAmountDistribution ? (
+              teacherAmountDistribution.length ? (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+                  {teacherAmountDistribution.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex min-h-[96px] flex-col justify-center rounded-[24px] border border-white/8 bg-white/5 px-4 py-2.5"
+                    >
+                      <p className="text-sm font-medium text-slate-100">
+                        {item.name}
+                      </p>
+                      <p className="mt-2 text-sm font-medium leading-5 text-cyan-100">
+                        {formatAmount(item.amount)}
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-slate-300">
+                        {formatPercentage(item.percentage ?? 0)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[24px] border border-white/8 bg-white/5 px-4 py-8 text-center text-sm text-slate-300">
+                  目前條件下沒有可顯示的教師金額分布。
+                </div>
+              )
+            ) : (
+              <div className="rounded-[24px] border border-white/8 bg-white/5 px-4 py-8 text-center text-sm text-slate-300">
+                點選上方篩選或圖表後，再展開查看教師金額分布。
+              </div>
+            )}
+          </PanelCard>
         </div>
       </div>
     </main>
