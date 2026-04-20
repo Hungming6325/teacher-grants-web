@@ -799,15 +799,6 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
               <h2 className="text-lg font-semibold text-white md:text-xl">具體事項</h2>
 
               <div className="flex flex-wrap items-center gap-2">
-                {(effectiveSelection.category1 || effectiveSelection.category2 || effectiveSelection.category3) && (
-                  <button
-                    type="button"
-                    onClick={() => setSelection({ category1: "", category2: "", category3: "" })}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-100 transition hover:bg-white/10"
-                  >
-                    清除選項
-                  </button>
-                )}
                 <button
                   type="button"
                   onClick={() => setShowDetails((current) => !current)}
