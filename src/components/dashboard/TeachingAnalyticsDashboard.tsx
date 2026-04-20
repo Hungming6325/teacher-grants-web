@@ -766,13 +766,13 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-slate-100">獎勵事項一</label>
+                <label className="mb-2 block text-sm text-slate-100">獎勵主類</label>
                 <select
                   value={effectiveFilters.category1}
                   onChange={(event) => handleFilterChange("category1", event.target.value)}
                   className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-fuchsia-300 md:text-base"
                 >
-                  <option value="" className="text-black">全部獎勵事項一</option>
+                  <option value="" className="text-black">全部獎勵主類</option>
                   {category1Options.map((item) => (
                     <option key={item} value={item} className="text-black">
                       {item}
@@ -782,13 +782,13 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-slate-100">獎勵事項二</label>
+                <label className="mb-2 block text-sm text-slate-100">獎勵次類</label>
                 <select
                   value={effectiveFilters.category2}
                   onChange={(event) => handleFilterChange("category2", event.target.value)}
                   className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300 md:text-base"
                 >
-                  <option value="" className="text-black">全部獎勵事項二</option>
+                  <option value="" className="text-black">全部獎勵次類</option>
                   {category2Options.map((item) => (
                     <option key={item} value={item} className="text-black">
                       {item}
