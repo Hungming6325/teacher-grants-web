@@ -622,15 +622,6 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
             <PanelCard className="border-white/10">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-white md:text-xl">主類點數占比</h2>
-                {effectiveSelection.category1 ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelection({ category1: "", category2: "", category3: "" })}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-100 transition hover:bg-white/10"
-                  >
-                    清除選項
-                  </button>
-                ) : null}
               </div>
 
               <div className="h-[360px] w-full">
@@ -696,17 +687,6 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
             <CategoryTreemap
               title="次類點數分布"
               data={category2Share}
-              action={
-                effectiveSelection.category2 ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelection((current) => ({ ...current, category2: "", category3: "" }))}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-100 transition hover:bg-white/10"
-                  >
-                    清除選項
-                  </button>
-                ) : null
-              }
               onSelect={(name) => {
                 const matchedCategory1 = Array.from(
                   new Set(
@@ -732,17 +712,6 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
               title="細項點數分布"
               data={category3Display}
               accent="#60a5fa"
-              action={
-                effectiveSelection.category3 ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelection((current) => ({ ...current, category3: "" }))}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-100 transition hover:bg-white/10"
-                  >
-                    清除選項
-                  </button>
-                ) : null
-              }
               onSelect={(name) =>
                 setSelection((current) => ({
                   category1: current.category1,
