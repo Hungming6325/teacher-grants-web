@@ -305,7 +305,11 @@ export function getTopDepartmentsByPoints(records: TeachingRecord[], limit = 12)
     .slice(0, limit)
 }
 
-export function getTeachingCollaborations(records: TeachingRecord[], limit = 12) {
+export function getTeachingCollaborations(
+  records: TeachingRecord[],
+  limit = 12,
+  selectedTeacher?: string
+) {
   const grouped = new Map<string, TeachingRecord[]>()
 
   records.forEach((record) => {
@@ -321,6 +325,22 @@ export function getTeachingCollaborations(records: TeachingRecord[], limit = 12)
     if (teachers.length < 2) return
 
     const applicationPoints = group.reduce((sum, record) => sum + record.points, 0)
+
+    if (selectedTeacher) {
+      if (!teachers.includes(selectedTeacher)) return
+
+      teachers
+        .filter((teacher) => teacher !== selectedTeacher)
+        .forEach((teacher) => {
+          const pair = `${selectedTeacher} × ${teacher}`
+          const current = pairs.get(pair) ?? { pair, count: 0, points: 0 }
+          current.count += 1
+          current.points += applicationPoints
+          pairs.set(pair, current)
+        })
+
+      return
+    }
 
     for (let index = 0; index < teachers.length; index += 1) {
       for (let nextIndex = index + 1; nextIndex < teachers.length; nextIndex += 1) {

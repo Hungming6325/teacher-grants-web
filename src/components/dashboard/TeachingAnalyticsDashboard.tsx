@@ -1,6 +1,14 @@
 ﻿"use client"
 
-import { ReactNode, useMemo, useState } from "react"
+import {
+  ReactNode,
+  useDeferredValue,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import CountUp from "react-countup"
 import {
   Bar,
@@ -42,6 +50,10 @@ import {
 
 type Props = {
   records: TeachingRecord[]
+}
+
+type TeacherSearchItem = {
+  name: string
 }
 
 type SummaryCardProps = {
@@ -328,6 +340,8 @@ function CategoryTreemap({
 
 export default function TeachingAnalyticsDashboard({ records }: Props) {
   const [filters, setFilters] = useState<TeachingFilters>(DEFAULT_TEACHING_FILTERS)
+  const [teacherKeyword, setTeacherKeyword] = useState("")
+  const [teacherDropdownOpen, setTeacherDropdownOpen] = useState(false)
   const [selection, setSelection] = useState<TeachingHierarchySelection>({
     category1: "",
     category2: "",
@@ -336,6 +350,22 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
   const [selectedDepartment, setSelectedDepartment] = useState("")
   const [showDetails, setShowDetails] = useState(false)
   const [showTeacherAmountDistribution, setShowTeacherAmountDistribution] = useState(false)
+  const teacherBoxRef = useRef<HTMLDivElement | null>(null)
+
+  const teacherSearch = useDeferredValue(teacherKeyword)
+  const onPointerDownOutside = useEffectEvent((event: MouseEvent) => {
+    if (
+      teacherBoxRef.current &&
+      !teacherBoxRef.current.contains(event.target as Node)
+    ) {
+      setTeacherDropdownOpen(false)
+    }
+  })
+
+  useEffect(() => {
+    document.addEventListener("mousedown", onPointerDownOutside)
+    return () => document.removeEventListener("mousedown", onPointerDownOutside)
+  }, [])
 
   const departments = useMemo(() => getTeachingDepartments(records), [records])
 
@@ -351,7 +381,16 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
     [records, filters.department, filters.category1, filters.category2, filters.category3]
   )
 
-  const teachers = useMemo(() => getTeachingTeachers(teacherSourceRecords), [teacherSourceRecords])
+  const teachers = useMemo<TeacherSearchItem[]>(
+    () => getTeachingTeachers(teacherSourceRecords).map((name) => ({ name })),
+    [teacherSourceRecords]
+  )
+  const teacherOptions = useMemo(() => {
+    const keyword = teacherSearch.trim()
+    if (!keyword) return teachers
+
+    return teachers.filter((teacher) => teacher.name.includes(keyword))
+  }, [teachers, teacherSearch])
   const category1Options = useMemo(() => getTeachingCategory1(records), [records])
 
   const effectiveFilters = useMemo(() => {
@@ -360,7 +399,8 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
     const nextCategory2 = nextCategory2Options.includes(filters.category2) ? filters.category2 : ""
     const nextCategory3Options = getTeachingCategory3(records, nextCategory1, nextCategory2)
     const nextCategory3 = nextCategory3Options.includes(filters.category3) ? filters.category3 : ""
-    const nextTeacher = teachers.includes(filters.teacherName) ? filters.teacherName : ""
+    const teacherNames = teachers.map((teacher) => teacher.name)
+    const nextTeacher = teacherNames.includes(filters.teacherName) ? filters.teacherName : ""
 
     return {
       department: filters.department,
@@ -473,19 +513,60 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
     [effectiveDepartmentSelection, scopedRecords]
   )
 
+  const collaborationScopedRecords = useMemo(() => {
+    const baseFilters = {
+      ...effectiveFilters,
+      teacherName: "",
+    }
+
+    const teacherAgnosticRecords = filterTeachingRecords(records, baseFilters)
+    const teacherAgnosticScopedRecords = filterTeachingBySelection(
+      teacherAgnosticRecords,
+      effectiveSelection
+    )
+
+    return effectiveDepartmentSelection
+      ? teacherAgnosticScopedRecords.filter(
+          (record) => record.department === effectiveDepartmentSelection
+        )
+      : teacherAgnosticScopedRecords
+  }, [
+    effectiveDepartmentSelection,
+    effectiveFilters,
+    effectiveSelection,
+    records,
+  ])
+
   const collaborations = useMemo(
     () =>
-      getTeachingCollaborations(detailScopedRecords).map((item) => ({
+      getTeachingCollaborations(
+        collaborationScopedRecords,
+        12,
+        effectiveFilters.teacherName || undefined
+      ).map((item) => ({
         name: item.pair,
         count: item.count,
         points: item.points,
       })),
+    [collaborationScopedRecords, effectiveFilters.teacherName]
+  )
+
+  const detailApplicationIds = useMemo(
+    () => new Set(detailScopedRecords.map((record) => record.applicationId)),
     [detailScopedRecords]
   )
 
+  const detailDisplayRecords = useMemo(
+    () =>
+      collaborationScopedRecords.filter((record) =>
+        detailApplicationIds.has(record.applicationId)
+      ),
+    [collaborationScopedRecords, detailApplicationIds]
+  )
+
   const detailRows = useMemo(
-    () => getTeachingApplicationRows(detailScopedRecords).slice(0, 12),
-    [detailScopedRecords]
+    () => getTeachingApplicationRows(detailDisplayRecords).slice(0, 12),
+    [detailDisplayRecords]
   )
 
   const teacherAmountDistribution = useMemo(() => {
@@ -521,12 +602,44 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
       if (key === "category2") {
         next.category3 = ""
       }
+
+      const validTeachers = getTeachingTeachers(
+        records.filter(
+          (record) =>
+            (!next.department || record.department === next.department) &&
+            (!next.category1 || record.category1 === next.category1) &&
+            (!next.category2 || record.category2 === next.category2) &&
+            (!next.category3 || record.category3 === next.category3)
+        )
+      )
+
+      if (next.teacherName && !validTeachers.includes(next.teacherName)) {
+        next.teacherName = ""
+        setTeacherKeyword("")
+      }
+
+      if (key === "teacherName") {
+        setTeacherKeyword(value)
+      }
+
+      if (key !== "teacherName" && !next.teacherName) {
+        setTeacherKeyword("")
+      }
+
       return next
     })
   }
 
+  function handleTeacherSelect(name: string) {
+    handleFilterChange("teacherName", name)
+    setTeacherKeyword(name)
+    setTeacherDropdownOpen(false)
+  }
+
   function resetFilters() {
     setFilters(DEFAULT_TEACHING_FILTERS)
+    setTeacherKeyword("")
+    setTeacherDropdownOpen(false)
     setSelection({ category1: "", category2: "", category3: "" })
     setSelectedDepartment("")
     setShowDetails(false)
@@ -551,7 +664,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
         </div>
 
         <div className="space-y-4">
-          <PanelCard className="overflow-visible border-white/10">
+          <PanelCard className="relative z-30 overflow-visible border-white/10">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_auto]">
               <div>
                 <label className="mb-2 block text-sm text-slate-100">系所</label>
@@ -569,20 +682,87 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
                 </select>
               </div>
 
-              <div>
+              <div ref={teacherBoxRef} className="relative z-40">
                 <label className="mb-2 block text-sm text-slate-100">教師</label>
-                <select
-                  value={effectiveFilters.teacherName}
-                  onChange={(event) => handleFilterChange("teacherName", event.target.value)}
-                  className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300 md:text-base"
+
+                <button
+                  type="button"
+                  onClick={() => setTeacherDropdownOpen((current) => !current)}
+                  className="flex w-full items-center justify-between rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-left text-sm text-white outline-none transition hover:border-emerald-300 focus:border-emerald-300 md:text-base"
                 >
-                  <option value="" className="text-black">全部教師</option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher} value={teacher} className="text-black">
-                      {teacher}
-                    </option>
-                  ))}
-                </select>
+                  <span
+                    className={
+                      effectiveFilters.teacherName ? "text-white" : "text-slate-300"
+                    }
+                  >
+                    {effectiveFilters.teacherName || "全部教師"}
+                  </span>
+                  <svg
+                    className={`h-5 w-5 text-white transition-transform ${
+                      teacherDropdownOpen ? "rotate-180" : ""
+                    }`}
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      d="M5 7.5L10 12.5L15 7.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                {teacherDropdownOpen ? (
+                  <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-400/20 bg-[#18304f] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+                    <div className="border-b border-slate-400/20 p-2">
+                      <input
+                        type="text"
+                        value={teacherKeyword}
+                        onChange={(event) => {
+                          setTeacherKeyword(event.target.value)
+                          if (filters.teacherName) {
+                            handleFilterChange("teacherName", "")
+                          }
+                        }}
+                        placeholder="輸入教師姓名搜尋"
+                        className="w-full rounded-xl border border-slate-400/20 bg-white/10 px-3 py-3 text-sm text-white outline-none placeholder:text-slate-300/70 focus:border-emerald-300 md:text-base"
+                      />
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto p-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleFilterChange("teacherName", "")
+                          setTeacherKeyword("")
+                          setTeacherDropdownOpen(false)
+                        }}
+                        className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
+                      >
+                        全部教師
+                      </button>
+
+                      {teacherOptions.length > 0 ? (
+                        teacherOptions.map((teacher) => (
+                          <button
+                            key={teacher.name}
+                            type="button"
+                            onClick={() => handleTeacherSelect(teacher.name)}
+                            className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
+                          >
+                            {teacher.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-slate-300">
+                          找不到符合條件的教師
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               <div>
