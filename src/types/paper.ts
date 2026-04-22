@@ -26,7 +26,7 @@ export type PaperFilters = {
   schoolYear: string
   department: string
   teacherName: string
-  journalCategory: string
+  journalCategories: string[]
 }
 
 export type PaperPublication = {

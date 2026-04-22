@@ -31,7 +31,7 @@ export const DEFAULT_PAPER_FILTERS: PaperFilters = {
   schoolYear: "",
   department: "",
   teacherName: "",
-  journalCategory: "",
+  journalCategories: [],
 }
 
 function cleanText(value: string | undefined) {
@@ -210,8 +210,10 @@ export function matchesPaperFilters(
   const matchTeacher =
     !filters.teacherName || publication.teacherNames.includes(filters.teacherName)
   const matchCategory =
-    !filters.journalCategory ||
-    publication.journalCategories.includes(filters.journalCategory)
+    filters.journalCategories.length === 0 ||
+    filters.journalCategories.some((category) =>
+      publication.journalCategories.includes(category)
+    )
 
   return matchSchoolYear && matchDepartment && matchTeacher && matchCategory
 }

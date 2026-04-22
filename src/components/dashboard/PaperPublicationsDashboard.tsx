@@ -107,6 +107,91 @@ const CHART_COLORS = [
   "#22d3ee",
 ]
 
+function toggleValue(values: string[], value: string) {
+  return values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value]
+}
+
+function JournalCategoryMultiSelect({
+  options,
+  value,
+  onChange,
+}: {
+  options: string[]
+  value: string[]
+  onChange: (value: string[]) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const label =
+    value.length === 0
+      ? "全部收錄分類"
+      : value.length === 1
+        ? value[0]
+        : `已選 ${value.length} 類`
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-left text-sm text-white outline-none transition hover:bg-white/10 focus:border-violet-300 md:text-base"
+      >
+        <span className="truncate">{label}</span>
+        <span className={`text-slate-300 transition ${isOpen ? "rotate-180" : ""}`}>
+          ⌄
+        </span>
+      </button>
+
+      {isOpen ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[70] rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-[0_24px_70px_rgba(2,8,23,0.45)] backdrop-blur-xl">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-sm text-slate-300">
+              {value.length ? `已選 ${value.length} 類` : "未限定分類"}
+            </span>
+            {value.length ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange([])
+                  setIsOpen(false)
+                }}
+                className="text-sm text-cyan-100 transition hover:text-white"
+              >
+                清除
+              </button>
+            ) : null}
+          </div>
+          <div className="max-h-64 space-y-2 overflow-auto pr-1">
+            {options.map((option) => (
+              <label
+                key={option}
+                className="flex cursor-pointer items-start gap-2 rounded-xl px-2 py-1.5 text-base text-slate-100 transition hover:bg-white/8"
+              >
+                <input
+                  type="checkbox"
+                  checked={value.includes(option)}
+                  onChange={() => onChange(toggleValue(value, option))}
+                  className="mt-1 accent-cyan-300"
+                />
+                <span className="leading-6">{option}</span>
+              </label>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 transition hover:bg-white/10"
+          >
+            完成
+          </button>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function CountOnlyTooltip({ active, payload }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
 
@@ -327,12 +412,14 @@ function TrendChart({ data }: { data: TrendDatum[] }) {
 
 function CategoryDistributionChart({
   data,
-  activeCategory,
-  onSelectCategory,
+  activeCategories,
+  onToggleCategory,
+  onClearCategories,
 }: {
   data: DistributionDatum[]
-  activeCategory: string
-  onSelectCategory: (category: string) => void
+  activeCategories: string[]
+  onToggleCategory: (category: string) => void
+  onClearCategories: () => void
 }) {
   return (
     <PanelCard className="min-w-0 border-emerald-300/12">
@@ -340,10 +427,10 @@ function CategoryDistributionChart({
         <h2 className="text-lg font-semibold text-white md:text-xl">
           收錄分類分布
         </h2>
-        {activeCategory ? (
+        {activeCategories.length ? (
           <button
             type="button"
-            onClick={() => onSelectCategory("")}
+            onClick={onClearCategories}
             className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-white/10"
           >
             清除選項
@@ -390,7 +477,7 @@ function CategoryDistributionChart({
               barSize={26}
               onClick={(entry) => {
                 if (!entry || typeof entry.name !== "string") return
-                onSelectCategory(entry.name === activeCategory ? "" : entry.name)
+                onToggleCategory(entry.name)
               }}
               style={{ cursor: "pointer" }}
             >
@@ -399,7 +486,10 @@ function CategoryDistributionChart({
                   key={`category-${entry.name}-${index}`}
                   fill={CHART_COLORS[index % CHART_COLORS.length]}
                   fillOpacity={
-                    !activeCategory || activeCategory === entry.name ? 1 : 0.3
+                    activeCategories.length === 0 ||
+                    activeCategories.includes(entry.name)
+                      ? 1
+                      : 0.3
                   }
                 />
               ))}
@@ -511,6 +601,82 @@ function PublicationList({
   )
 }
 
+function TeacherPublicationRank({
+  data,
+  isOpen,
+  onToggleOpen,
+  selectedTeacher,
+  onSelectTeacher,
+}: {
+  data: Array<{ name: string; count: number }>
+  isOpen: boolean
+  onToggleOpen: () => void
+  selectedTeacher: string
+  onSelectTeacher: (name: string) => void
+}) {
+  return (
+    <PanelCard className="border-white/10">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-white md:text-xl">
+          教師發表數量排行
+        </h2>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+            {data.length} 位
+          </span>
+          <button
+            type="button"
+            onClick={onToggleOpen}
+            className="rounded-2xl border border-cyan-300/35 bg-cyan-300/10 px-3 py-2 text-xs text-cyan-100 transition hover:bg-cyan-300/15"
+          >
+            {isOpen ? "收合教師排行" : "顯示教師排行"}
+          </button>
+        </div>
+      </div>
+
+      {isOpen ? (
+        data.length ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {data.map((item, index) => (
+              <button
+                key={item.name}
+                type="button"
+                onClick={() => onSelectTeacher(item.name)}
+                className={`rounded-[24px] border px-4 py-3 text-left transition ${
+                  selectedTeacher === item.name
+                    ? "border-cyan-300/45 bg-cyan-300/12"
+                    : "border-white/8 bg-white/5 hover:bg-white/8"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-base font-semibold text-slate-200">
+                    #{index + 1}
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-base font-semibold text-slate-100">
+                    {item.count} 篇
+                  </span>
+                </div>
+                <p className="mt-3 text-base font-semibold text-white">
+                  {item.name}
+                </p>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[24px] border border-white/8 bg-white/5 px-4 py-8 text-center text-sm text-slate-300">
+            目前條件下沒有可顯示的教師排行。
+          </div>
+        )
+      ) : (
+        <div className="rounded-[24px] border border-white/8 bg-white/5 px-4 py-8 text-center text-sm text-slate-300">
+          展開後可依目前篩選條件查看教師發表數量排行。
+        </div>
+      )}
+    </PanelCard>
+  )
+}
+
 function filterRecordsByPaperFilters(records: PaperRecord[], filters: PaperFilters) {
   return records.filter((record) => {
     const matchYear = !filters.schoolYear || record.schoolYear === filters.schoolYear
@@ -519,8 +685,10 @@ function filterRecordsByPaperFilters(records: PaperRecord[], filters: PaperFilte
     const matchTeacher =
       !filters.teacherName || record.teacherName === filters.teacherName
     const matchCategory =
-      !filters.journalCategory ||
-      record.journalCategories.includes(filters.journalCategory)
+      filters.journalCategories.length === 0 ||
+      filters.journalCategories.some((category) =>
+        record.journalCategories.includes(category)
+      )
 
     return matchYear && matchDepartment && matchTeacher && matchCategory
   })
@@ -552,6 +720,7 @@ export default function PaperPublicationsDashboard({ records }: Props) {
   const [filters, setFilters] = useState<PaperFilters>(DEFAULT_PAPER_FILTERS)
   const [teacherKeyword, setTeacherKeyword] = useState("")
   const [teacherDropdownOpen, setTeacherDropdownOpen] = useState(false)
+  const [showTeacherRank, setShowTeacherRank] = useState(false)
   const teacherBoxRef = useRef<HTMLDivElement | null>(null)
 
   const teacherSearch = useDeferredValue(teacherKeyword)
@@ -593,7 +762,7 @@ export default function PaperPublicationsDashboard({ records }: Props) {
   const categorySourceRecords = useMemo(() => {
     return filterRecordsByPaperFilters(fullTimeRecords, {
       ...filters,
-      journalCategory: "",
+      journalCategories: [],
     })
   }, [fullTimeRecords, filters])
 
@@ -681,7 +850,24 @@ export default function PaperPublicationsDashboard({ records }: Props) {
       .sort((a, b) => b.publicationYear - a.publicationYear)
   }, [filteredPublications, filters.teacherName])
 
-  function handleFilterChange(key: keyof PaperFilters, value: string) {
+  const teacherPublicationRank = useMemo(() => {
+    const counts = new Map<string, number>()
+
+    filteredPublications.forEach((publication) => {
+      publication.teacherNames.forEach((teacher) => {
+        counts.set(teacher, (counts.get(teacher) ?? 0) + 1)
+      })
+    })
+
+    return Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "zh-Hant"))
+  }, [filteredPublications])
+
+  function handleFilterChange<K extends keyof PaperFilters>(
+    key: K,
+    value: PaperFilters[K]
+  ) {
     setFilters((prev) => {
       const next = { ...prev, [key]: value }
 
@@ -700,19 +886,16 @@ export default function PaperPublicationsDashboard({ records }: Props) {
       const validCategories = getPaperJournalCategories(
         filterRecordsByPaperFilters(fullTimeRecords, {
           ...next,
-          journalCategory: "",
+          journalCategories: [],
         })
       )
 
-      if (
-        next.journalCategory &&
-        !validCategories.includes(next.journalCategory)
-      ) {
-        next.journalCategory = ""
-      }
+      next.journalCategories = next.journalCategories.filter((category) =>
+        validCategories.includes(category)
+      )
 
       if (key === "teacherName") {
-        setTeacherKeyword(value)
+        setTeacherKeyword(String(value))
       }
 
       if (key !== "teacherName" && !next.teacherName) {
@@ -733,6 +916,10 @@ export default function PaperPublicationsDashboard({ records }: Props) {
     setFilters(DEFAULT_PAPER_FILTERS)
     setTeacherKeyword("")
     setTeacherDropdownOpen(false)
+  }
+
+  function handleCategoryToggle(category: string) {
+    handleFilterChange("journalCategories", toggleValue(filters.journalCategories, category))
   }
 
   return (
@@ -877,22 +1064,13 @@ export default function PaperPublicationsDashboard({ records }: Props) {
 
               <div>
                 <label className="mb-2 block text-sm text-slate-100">收錄分類</label>
-                <select
-                  value={filters.journalCategory}
-                  onChange={(event) =>
-                    handleFilterChange("journalCategory", event.target.value)
+                <JournalCategoryMultiSelect
+                  options={journalCategories}
+                  value={filters.journalCategories}
+                  onChange={(nextValue) =>
+                    handleFilterChange("journalCategories", nextValue)
                   }
-                  className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-violet-300 md:text-base"
-                >
-                  <option value="" className="text-black">
-                    全部收錄分類
-                  </option>
-                  {journalCategories.map((category) => (
-                    <option key={category} value={category} className="text-black">
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div className="flex items-end">
@@ -954,10 +1132,9 @@ export default function PaperPublicationsDashboard({ records }: Props) {
             <TrendChart data={trendSeries} />
             <CategoryDistributionChart
               data={categoryDistribution}
-              activeCategory={filters.journalCategory}
-              onSelectCategory={(category) =>
-                handleFilterChange("journalCategory", category)
-              }
+              activeCategories={filters.journalCategories}
+              onToggleCategory={handleCategoryToggle}
+              onClearCategories={() => handleFilterChange("journalCategories", [])}
             />
           </section>
 
@@ -985,6 +1162,14 @@ export default function PaperPublicationsDashboard({ records }: Props) {
               </PanelCard>
             )}
           </section>
+
+          <TeacherPublicationRank
+            data={teacherPublicationRank}
+            isOpen={showTeacherRank}
+            onToggleOpen={() => setShowTeacherRank((current) => !current)}
+            selectedTeacher={filters.teacherName}
+            onSelectTeacher={handleTeacherSelect}
+          />
         </div>
       </div>
     </main>
