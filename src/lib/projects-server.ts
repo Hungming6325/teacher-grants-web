@@ -1,14 +1,14 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
-import { parseTeachingCsv } from "./teaching"
+import { parseProjectContractsCsv } from "./projects"
 
-export async function loadTeachingCsvFromDisk() {
+export async function loadProjectContractsCsvFromDisk() {
   const filePath = path.join(
     process.cwd(),
     "data",
-    "teaching_112_114.csv"
+    "projects_112_114.csv"
   )
   const csvText = await fs.readFile(filePath, "utf8")
 
-  return parseTeachingCsv(csvText)
+  return parseProjectContractsCsv(csvText)
 }

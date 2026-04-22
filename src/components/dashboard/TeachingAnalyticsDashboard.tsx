@@ -646,11 +646,11 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-[#12233f] px-4 py-4 text-white md:px-6 lg:px-8">
-      <div className="relative mx-auto max-w-7xl">
+    <main className="min-h-screen overflow-hidden bg-[#12233f] text-white">
+      <div className="relative mx-auto flex w-full max-w-[1920px] flex-col gap-6 px-4 py-6 md:px-8">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.12),transparent_28%)] blur-3xl" />
 
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="mb-2 text-xs uppercase tracking-wider text-cyan-200/80 md:text-sm">
               Teaching Analytic Dashboard

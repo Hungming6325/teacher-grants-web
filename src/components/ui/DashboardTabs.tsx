@@ -4,16 +4,18 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const LINKS = [
-  { href: "/", label: "獎補助分析" },
+  { href: "/", label: "獎補助" },
   { href: "/papers", label: "論文發表" },
   { href: "/teaching", label: "教學精進" },
+  { href: "/projects", label: "計畫承接" },
+  { href: "/teachers", label: "教師聘任" },
 ]
 
 export default function DashboardTabs() {
   const pathname = usePathname()
 
   return (
-    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/35 p-1 backdrop-blur-md">
+    <div className="flex flex-wrap items-center gap-2 rounded-full border border-white/10 bg-slate-950/35 p-1 backdrop-blur-md">
       {LINKS.map((link) => {
         const isActive = pathname === link.href
 
