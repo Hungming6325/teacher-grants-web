@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const LINKS = [
-  { href: "/", label: "獎補助" },
+  { href: "/grants", label: "獎補助" },
   { href: "/papers", label: "論文發表" },
   { href: "/teaching", label: "教學精進" },
   { href: "/projects", label: "計畫承接" },
