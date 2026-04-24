@@ -125,18 +125,21 @@ export default function TrendLineChart({
     <PanelCard className="min-w-0 border-fuchsia-300/10">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-white md:text-xl">{title}</h2>
-        {lockedLegendKey && (
-          <button
-            type="button"
-            onClick={() => {
-              setLockedLegendKey(null)
-              setHoveredLegendKey(null)
-            }}
-            className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
-          >
-            取消鎖定
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {action}
+          {lockedLegendKey && (
+            <button
+              type="button"
+              onClick={() => {
+                setLockedLegendKey(null)
+                setHoveredLegendKey(null)
+              }}
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
+            >
+              取消鎖定
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="min-w-0 h-[360px] w-full">

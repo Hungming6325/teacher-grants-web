@@ -233,6 +233,10 @@ export default function TeacherGrantsDashboard({ records }: Props) {
     handleFilterChange("subcategory", filters.subcategory === name ? "" : name)
   }
 
+  function clearSubcategorySelection() {
+    handleFilterChange("subcategory", "")
+  }
+
   function resetFilters() {
     setFilters(DEFAULT_FILTERS)
     setTeacherKeyword("")
@@ -473,6 +477,17 @@ export default function TeacherGrantsDashboard({ records }: Props) {
               selectedSubcategory={filters.subcategory}
               selectedName={filters.subcategory}
               onSelect={handleChartItemSelect}
+              action={
+                filters.subcategory ? (
+                  <button
+                    type="button"
+                    onClick={clearSubcategorySelection}
+                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
+                  >
+                    清除選項
+                  </button>
+                ) : null
+              }
             />
 
             <TrendLineChart
@@ -481,6 +496,17 @@ export default function TeacherGrantsDashboard({ records }: Props) {
               selectedSubcategory={filters.subcategory}
               selectedSeriesKey={filters.subcategory}
               onSelectSeries={handleChartItemSelect}
+              action={
+                filters.subcategory ? (
+                  <button
+                    type="button"
+                    onClick={clearSubcategorySelection}
+                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
+                  >
+                    清除選項
+                  </button>
+                ) : null
+              }
             />
           </section>
 
