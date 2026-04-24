@@ -136,18 +136,17 @@ export default function TeacherGrantsDashboard({ records }: Props) {
   )
 
   const chartData = useMemo(() => {
-    if (filters.subcategory) {
-      return getTeacherAmountData(filteredRecords).map((item) => ({
-        ...item,
-        percentage: getShareAmount(item.amount, totalAmount) * 100,
-      }))
-    }
+    const chartRecords = filterRecords(records, {
+      ...filters,
+      subcategory: "",
+    })
+    const chartTotalAmount = getTotalAmount(chartRecords)
 
-    return getSubcategoryAmountData(filteredRecords).map((item) => ({
+    return getSubcategoryAmountData(chartRecords).map((item) => ({
       ...item,
-      percentage: getShareAmount(item.amount, totalAmount) * 100,
+      percentage: getShareAmount(item.amount, chartTotalAmount) * 100,
     }))
-  }, [filteredRecords, filters.subcategory, totalAmount])
+  }, [records, filters])
 
   const teacherAmountDistribution = useMemo(() => {
     return getTeacherAmountData(filteredRecords).map((item) => ({
@@ -162,20 +161,18 @@ export default function TeacherGrantsDashboard({ records }: Props) {
         !filters.department || record.department === filters.department
       const matchTeacher =
         !filters.teacher || record.teacher === filters.teacher
-      const matchSubcategory =
-        !filters.subcategory || record.subcategory === filters.subcategory
 
-      return matchDepartment && matchTeacher && matchSubcategory
+      return matchDepartment && matchTeacher
     })
-  }, [records, filters.department, filters.teacher, filters.subcategory])
+  }, [records, filters.department, filters.teacher])
 
   const trendChartData = useMemo(() => {
     return getTrendChartData(
       trendSourceRecords,
       FIXED_YEARS,
-      filters.subcategory ? "teacher" : "subcategory"
+      "subcategory"
     )
-  }, [trendSourceRecords, filters.subcategory])
+  }, [trendSourceRecords])
 
   function handleFilterChange(key: keyof GrantFilters, value: string) {
     setFilters((prev) => {
@@ -233,14 +230,6 @@ export default function TeacherGrantsDashboard({ records }: Props) {
   }
 
   function handleChartItemSelect(name: string) {
-    if (filters.subcategory) {
-      const nextTeacher = filters.teacher === name ? "" : name
-      handleFilterChange("teacher", nextTeacher)
-      setTeacherKeyword(nextTeacher)
-      setTeacherDropdownOpen(false)
-      return
-    }
-
     handleFilterChange("subcategory", filters.subcategory === name ? "" : name)
   }
 
@@ -480,17 +469,17 @@ export default function TeacherGrantsDashboard({ records }: Props) {
           <section className="grid gap-4 xl:grid-cols-2">
             <SubcategoryBarChart
               data={chartData}
-              mode={filters.subcategory ? "teacher" : "subcategory"}
+              mode="subcategory"
               selectedSubcategory={filters.subcategory}
-              selectedName={filters.subcategory ? filters.teacher : filters.subcategory}
+              selectedName={filters.subcategory}
               onSelect={handleChartItemSelect}
             />
 
             <TrendLineChart
               data={trendChartData}
-              mode={filters.subcategory ? "teacher" : "subcategory"}
+              mode="subcategory"
               selectedSubcategory={filters.subcategory}
-              selectedSeriesKey={filters.subcategory ? filters.teacher : filters.subcategory}
+              selectedSeriesKey={filters.subcategory}
               onSelectSeries={handleChartItemSelect}
             />
           </section>
