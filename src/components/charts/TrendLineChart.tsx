@@ -21,6 +21,8 @@ type TrendLineChartProps = {
   data: TrendRow[]
   mode: "subcategory" | "teacher"
   selectedSubcategory: string
+  selectedSeriesKey?: string
+  onSelectSeries?: (name: string) => void
 }
 
 type TooltipPayloadItem = {
@@ -96,11 +98,13 @@ export default function TrendLineChart({
   data,
   mode,
   selectedSubcategory,
+  selectedSeriesKey = "",
+  onSelectSeries,
 }: TrendLineChartProps) {
   const [hoveredLegendKey, setHoveredLegendKey] = useState<string | null>(null)
   const [lockedLegendKey, setLockedLegendKey] = useState<string | null>(null)
 
-  const activeLegendKey = lockedLegendKey || hoveredLegendKey
+  const activeLegendKey = selectedSeriesKey || lockedLegendKey || hoveredLegendKey
 
   const seriesKeys = useMemo(() => {
     return Array.from(
@@ -196,7 +200,12 @@ export default function TrendLineChart({
                 if (!lockedLegendKey) setHoveredLegendKey(null)
               }}
               onClick={() => {
-                setLockedLegendKey((prev) => (prev === key ? null : key))
+                if (onSelectSeries) {
+                  setLockedLegendKey(null)
+                  onSelectSeries(key)
+                } else {
+                  setLockedLegendKey((prev) => (prev === key ? null : key))
+                }
                 setHoveredLegendKey(null)
               }}
             >
@@ -211,7 +220,7 @@ export default function TrendLineChart({
                 className="truncate text-sm"
                 style={{
                   color: isActive ? "#e2e8f0" : "rgba(226,232,240,0.38)",
-                  fontWeight: lockedLegendKey === key ? 700 : 500,
+                  fontWeight: activeLegendKey === key ? 700 : 500,
                 }}
               >
                 {key}

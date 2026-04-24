@@ -232,6 +232,18 @@ export default function TeacherGrantsDashboard({ records }: Props) {
     setTeacherDropdownOpen(false)
   }
 
+  function handleChartItemSelect(name: string) {
+    if (filters.subcategory) {
+      const nextTeacher = filters.teacher === name ? "" : name
+      handleFilterChange("teacher", nextTeacher)
+      setTeacherKeyword(nextTeacher)
+      setTeacherDropdownOpen(false)
+      return
+    }
+
+    handleFilterChange("subcategory", filters.subcategory === name ? "" : name)
+  }
+
   function resetFilters() {
     setFilters(DEFAULT_FILTERS)
     setTeacherKeyword("")
@@ -470,12 +482,16 @@ export default function TeacherGrantsDashboard({ records }: Props) {
               data={chartData}
               mode={filters.subcategory ? "teacher" : "subcategory"}
               selectedSubcategory={filters.subcategory}
+              selectedName={filters.subcategory ? filters.teacher : filters.subcategory}
+              onSelect={handleChartItemSelect}
             />
 
             <TrendLineChart
               data={trendChartData}
               mode={filters.subcategory ? "teacher" : "subcategory"}
               selectedSubcategory={filters.subcategory}
+              selectedSeriesKey={filters.subcategory ? filters.teacher : filters.subcategory}
+              onSelectSeries={handleChartItemSelect}
             />
           </section>
 

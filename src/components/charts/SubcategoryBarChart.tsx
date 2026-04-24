@@ -22,6 +22,8 @@ type Props = {
   data: ChartItem[]
   mode?: "subcategory" | "teacher"
   selectedSubcategory?: string
+  selectedName?: string
+  onSelect?: (name: string) => void
 }
 
 const COLORS = [
@@ -41,6 +43,8 @@ export default function SubcategoryBarChart({
   data,
   mode = "subcategory",
   selectedSubcategory = "",
+  selectedName = "",
+  onSelect,
 }: Props) {
   const chartHeight =
     mode === "teacher"
@@ -116,6 +120,9 @@ export default function SubcategoryBarChart({
                 <Cell
                   key={`cell-${entry.name}-${index}`}
                   fill={COLORS[index % COLORS.length]}
+                  opacity={selectedName && selectedName !== entry.name ? 0.36 : 1}
+                  cursor={onSelect ? "pointer" : "default"}
+                  onClick={() => onSelect?.(entry.name)}
                 />
               ))}
             </Bar>
