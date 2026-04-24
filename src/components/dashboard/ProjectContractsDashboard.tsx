@@ -510,8 +510,23 @@ export default function ProjectContractsDashboard({ records }: Props) {
       }),
     [filteredRecords, effectiveSelection.department, effectiveSelection.teacherName]
   )
+  const trendScopedRecords = useMemo(
+    () =>
+      filterProjectsBySelection(filteredRecords, {
+        ...DEFAULT_PROJECT_SELECTION,
+        projectTypes: effectiveSelection.projectTypes,
+        department: effectiveSelection.department,
+        teacherName: effectiveSelection.teacherName,
+      }),
+    [
+      filteredRecords,
+      effectiveSelection.department,
+      effectiveSelection.projectTypes,
+      effectiveSelection.teacherName,
+    ]
+  )
   const summary = useMemo(() => getProjectSummary(scopedRecords), [scopedRecords])
-  const yearTrend = useMemo(() => getProjectYearTrend(filteredRecords), [filteredRecords])
+  const yearTrend = useMemo(() => getProjectYearTrend(trendScopedRecords), [trendScopedRecords])
   const typeDistribution = useMemo(
     () => getProjectTypeDistribution(typeScopedRecords),
     [typeScopedRecords]
