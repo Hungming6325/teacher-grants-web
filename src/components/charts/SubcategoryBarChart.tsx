@@ -1,5 +1,6 @@
 "use client"
 
+import { ReactNode } from "react"
 import {
   Bar,
   BarChart,
@@ -24,6 +25,7 @@ type Props = {
   selectedSubcategory?: string
   selectedName?: string
   onSelect?: (name: string) => void
+  action?: ReactNode
 }
 
 const COLORS = [
@@ -45,6 +47,7 @@ export default function SubcategoryBarChart({
   selectedSubcategory = "",
   selectedName = "",
   onSelect,
+  action,
 }: Props) {
   const chartHeight =
     mode === "teacher"
@@ -60,9 +63,12 @@ export default function SubcategoryBarChart({
     <PanelCard className="min-w-0 border-emerald-300/10">
       <div className="mb-5 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-white md:text-xl">{title}</h2>
-        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
-          {data.length} 筆
-        </span>
+        <div className="flex items-center gap-2">
+          {action}
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+            {data.length} 筆
+          </span>
+        </div>
       </div>
 
       <div className="min-w-0 w-full" style={{ height: chartHeight }}>

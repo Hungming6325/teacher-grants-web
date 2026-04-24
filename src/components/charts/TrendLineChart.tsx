@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { ReactNode, useMemo, useState } from "react"
 import {
   CartesianGrid,
   Line,
@@ -23,6 +23,7 @@ type TrendLineChartProps = {
   selectedSubcategory: string
   selectedSeriesKey?: string
   onSelectSeries?: (name: string) => void
+  action?: ReactNode
 }
 
 type TooltipPayloadItem = {
@@ -100,6 +101,7 @@ export default function TrendLineChart({
   selectedSubcategory,
   selectedSeriesKey = "",
   onSelectSeries,
+  action,
 }: TrendLineChartProps) {
   const [hoveredLegendKey, setHoveredLegendKey] = useState<string | null>(null)
   const [lockedLegendKey, setLockedLegendKey] = useState<string | null>(null)
