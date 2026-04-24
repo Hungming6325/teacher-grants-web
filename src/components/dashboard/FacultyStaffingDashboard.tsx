@@ -528,12 +528,32 @@ function TeacherList({ records }: { records: TeacherRecord[] }) {
 
 function ResearchRiskList({ items }: { items: ResearchRiskItem[] }) {
   const [showDetails, setShowDetails] = useState(false)
+  const highRiskCount = items.filter((item) => item.missingProject && item.missingOutcome).length
+  const mediumRiskCount = items.length - highRiskCount
+  const riskStyles = {
+    high: {
+      card: "border-rose-200/35 border-l-4 border-l-rose-300 bg-rose-500/15 shadow-[inset_0_0_0_1px_rgba(251,113,133,0.08)]",
+      badge: "bg-rose-300/20 text-rose-50 ring-1 ring-rose-200/25",
+    },
+    medium: {
+      card: "border-amber-200/35 border-l-4 border-l-amber-300 bg-amber-400/15 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.08)]",
+      badge: "bg-amber-300/20 text-amber-50 ring-1 ring-amber-200/25",
+    },
+  }
 
   return (
     <PanelCard className="border-rose-200/20">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="space-y-2">
           <h2 className="text-lg font-semibold text-white md:text-xl">研究評鑑風險名單</h2>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="rounded-full border border-rose-200/25 bg-rose-500/15 px-3 py-1 text-rose-50">
+              高風險 {highRiskCount}
+            </span>
+            <span className="rounded-full border border-amber-200/25 bg-amber-400/15 px-3 py-1 text-amber-50">
+              中風險 {mediumRiskCount}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full border border-rose-200/20 bg-rose-300/10 px-3 py-1 text-xs text-rose-100">
@@ -553,16 +573,18 @@ function ResearchRiskList({ items }: { items: ResearchRiskItem[] }) {
         items.length ? (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {items.map((item) => {
+              const isHighRisk = item.missingProject && item.missingOutcome
               const riskLabel =
-                item.missingProject && item.missingOutcome ? "高風險" : "中風險"
+                isHighRisk ? "高風險" : "中風險"
+              const riskStyle = isHighRisk ? riskStyles.high : riskStyles.medium
 
               return (
                 <div
                   key={item.teacher.id}
-                  className="rounded-[24px] border border-rose-200/15 bg-rose-300/8 p-4"
+                  className={`rounded-[24px] border p-4 ${riskStyle.card}`}
                 >
                   <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-rose-300/15 px-3 py-1 text-xs font-medium text-rose-100">
+                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${riskStyle.badge}`}>
                       {riskLabel}
                     </span>
                     <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-slate-200">
@@ -573,10 +595,7 @@ function ResearchRiskList({ items }: { items: ResearchRiskItem[] }) {
                     </span>
                   </div>
                   <h3 className="text-xl font-semibold text-white">{item.teacher.name}</h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-200">
-                    研究評鑑資料顯示，研究成果可能未達基本門檻。
-                  </p>
-                  <div className="mt-4 grid gap-2 text-sm text-slate-200">
+                  <div className="mt-3 grid gap-2 text-sm text-slate-200">
                     <p>
                       計畫件數：{item.projectCount} 件
                       {item.projectCount > 0 ? `(${formatWan(item.projectAmount)})` : ""}

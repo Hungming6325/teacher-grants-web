@@ -58,10 +58,10 @@ export default function HomePage() {
         <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.18),rgba(52,211,153,0.08)_38%,transparent_68%)] blur-2xl" />
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 -z-10 h-56 bg-gradient-to-t from-[#0b1628]/90 to-transparent" />
 
-        <section className="flex flex-1 items-center justify-center py-10">
+        <section className="flex flex-1 items-start justify-center pt-8 pb-10 md:pt-10">
           <div className="w-full max-w-6xl">
-            <div className="mb-10 flex flex-col items-center text-center">
-              <div className="mb-5 px-5 py-3">
+            <div className="mb-14 flex flex-col items-center text-center md:mb-16">
+              <div className="mb-3 px-5 pb-3 pt-0">
                 <Image
                   src="/CGIT_logo.svg"
                   alt="長庚科技大學"
@@ -79,7 +79,7 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
               {dashboards.map((dashboard, index) => {
                 const Icon = dashboard.icon
 
@@ -87,7 +87,7 @@ export default function HomePage() {
                   <Link
                     key={dashboard.href}
                     href={dashboard.href}
-                    className="portal-card group relative min-h-[260px] overflow-hidden rounded-[32px] border border-white/12 bg-[linear-gradient(150deg,rgba(15,23,42,0.70),rgba(30,41,59,0.46))] p-5 shadow-[0_24px_80px_rgba(2,8,23,0.28)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-white/24 hover:bg-white/10"
+                    className="portal-card group relative min-h-[260px] overflow-hidden rounded-[32px] border border-white/12 bg-[linear-gradient(150deg,rgba(15,23,42,0.70),rgba(30,41,59,0.46))] px-5 pb-5 pt-4 shadow-[0_24px_80px_rgba(2,8,23,0.28)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-white/24 hover:bg-white/10"
                   >
                     <div
                       className="absolute -right-14 -top-14 h-36 w-36 rounded-full opacity-20 blur-2xl transition group-hover:opacity-35"
