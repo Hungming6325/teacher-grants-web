@@ -1,6 +1,14 @@
 "use client"
 
-import { ReactNode, useMemo, useState } from "react"
+import {
+  ReactNode,
+  useDeferredValue,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import CountUp from "react-countup"
 import {
   Area,
@@ -440,8 +448,25 @@ function TeacherRankCards({
 
 export default function ProjectContractsDashboard({ records }: Props) {
   const [filters, setFilters] = useState<ProjectFilters>(DEFAULT_PROJECT_FILTERS)
+  const [teacherKeyword, setTeacherKeyword] = useState("")
+  const [teacherDropdownOpen, setTeacherDropdownOpen] = useState(false)
   const [selection, setSelection] = useState<ProjectSelection>(DEFAULT_PROJECT_SELECTION)
   const [showDetails, setShowDetails] = useState(false)
+  const teacherBoxRef = useRef<HTMLDivElement | null>(null)
+  const teacherSearch = useDeferredValue(teacherKeyword)
+  const onPointerDownOutside = useEffectEvent((event: MouseEvent) => {
+    if (
+      teacherBoxRef.current &&
+      !teacherBoxRef.current.contains(event.target as Node)
+    ) {
+      setTeacherDropdownOpen(false)
+    }
+  })
+
+  useEffect(() => {
+    document.addEventListener("mousedown", onPointerDownOutside)
+    return () => document.removeEventListener("mousedown", onPointerDownOutside)
+  }, [])
 
   const years = useMemo(() => getProjectYears(records), [records])
   const departments = useMemo(() => getProjectDepartments(records), [records])
@@ -458,6 +483,12 @@ export default function ProjectContractsDashboard({ records }: Props) {
     [records, filters.year, filters.department, filters.projectTypes]
   )
   const teachers = useMemo(() => getProjectTeachers(teacherSourceRecords), [teacherSourceRecords])
+  const teacherOptions = useMemo(() => {
+    const keyword = teacherSearch.trim()
+    if (!keyword) return teachers
+
+    return teachers.filter((teacher) => teacher.includes(keyword))
+  }, [teacherSearch, teachers])
 
   const effectiveFilters = useMemo(
     () => ({
@@ -542,6 +573,13 @@ export default function ProjectContractsDashboard({ records }: Props) {
   const projectList = useMemo(() => scopedRecords.slice(0, 18), [scopedRecords])
 
   function handleFilterChange(key: keyof ProjectFilters, value: string | string[]) {
+    if (key === "teacherName") {
+      setTeacherKeyword(String(value))
+    } else {
+      setTeacherKeyword("")
+      setTeacherDropdownOpen(false)
+    }
+
     setFilters((current) => ({
       ...current,
       [key]: value,
@@ -552,12 +590,20 @@ export default function ProjectContractsDashboard({ records }: Props) {
     setSelection(DEFAULT_PROJECT_SELECTION)
   }
 
+  function handleTeacherSelect(name: string) {
+    handleFilterChange("teacherName", name)
+    setTeacherKeyword(name)
+    setTeacherDropdownOpen(false)
+  }
+
   function clearSelection() {
     setSelection(DEFAULT_PROJECT_SELECTION)
   }
 
   function resetFilters() {
     setFilters(DEFAULT_PROJECT_FILTERS)
+    setTeacherKeyword("")
+    setTeacherDropdownOpen(false)
     setSelection(DEFAULT_PROJECT_SELECTION)
     setShowDetails(false)
   }
@@ -611,18 +657,70 @@ export default function ProjectContractsDashboard({ records }: Props) {
                 </select>
               </div>
 
-              <div>
+              <div ref={teacherBoxRef} className="relative z-40">
                 <label className="mb-2 block text-sm text-slate-100">教師</label>
-                <select
-                  value={effectiveFilters.teacherName}
-                  onChange={(event) => handleFilterChange("teacherName", event.target.value)}
-                  className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300 md:text-base"
+                <button
+                  type="button"
+                  onClick={() => setTeacherDropdownOpen((current) => !current)}
+                  className="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-left text-sm text-white outline-none transition hover:border-emerald-300 focus:border-emerald-300 md:text-base"
                 >
-                  <option value="" className="text-black">全部教師</option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher} value={teacher} className="text-black">{teacher}</option>
-                  ))}
-                </select>
+                  <span className={effectiveFilters.teacherName ? "truncate text-white" : "truncate text-slate-300"}>
+                    {effectiveFilters.teacherName || "全部教師"}
+                  </span>
+                  <span className={`text-slate-300 transition ${teacherDropdownOpen ? "rotate-180" : ""}`}>
+                    ▾
+                  </span>
+                </button>
+
+                {teacherDropdownOpen ? (
+                  <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-400/20 bg-[#18304f] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+                    <div className="border-b border-slate-400/20 p-2">
+                      <input
+                        type="text"
+                        value={teacherKeyword}
+                        onChange={(event) => {
+                          setTeacherKeyword(event.target.value)
+                          if (filters.teacherName) {
+                            handleFilterChange("teacherName", "")
+                          }
+                        }}
+                        placeholder="輸入教師姓名搜尋"
+                        className="w-full rounded-xl border border-slate-400/20 bg-white/10 px-3 py-3 text-sm text-white outline-none placeholder:text-slate-300/70 focus:border-emerald-300 md:text-base"
+                      />
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto p-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleFilterChange("teacherName", "")
+                          setTeacherKeyword("")
+                          setTeacherDropdownOpen(false)
+                        }}
+                        className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
+                      >
+                        全部教師
+                      </button>
+
+                      {teacherOptions.length ? (
+                        teacherOptions.map((teacher) => (
+                          <button
+                            key={teacher}
+                            type="button"
+                            onClick={() => handleTeacherSelect(teacher)}
+                            className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
+                          >
+                            {teacher}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-slate-300">
+                          找不到符合條件的教師
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               <div>

@@ -56,6 +56,26 @@ type DistributionDatum = {
   value: number
 }
 
+type CollaborationNode = {
+  name: string
+  papers: number
+  x: number
+  y: number
+  radius: number
+  color: string
+}
+
+type CollaborationLink = {
+  source: string
+  target: string
+  count: number
+}
+
+type CollaborationGraphData = {
+  nodes: CollaborationNode[]
+  links: CollaborationLink[]
+}
+
 type TrendDatum = {
   year: string
   totalPapers: number
@@ -106,6 +126,10 @@ const CHART_COLORS = [
   "#fb7185",
   "#22d3ee",
 ]
+
+function shortenLabel(value: string, limit = 10) {
+  return value.length > limit ? `${value.slice(0, limit)}...` : value
+}
 
 function toggleValue(values: string[], value: string) {
   return values.includes(value)
@@ -501,67 +525,110 @@ function CategoryDistributionChart({
   )
 }
 
-function CollaborationChart({
+function CollaborationNetworkChart({
   data,
   selectedTeacher,
 }: {
-  data: DistributionDatum[]
+  data: CollaborationGraphData
   selectedTeacher: string
 }) {
+  const nodeMap = new Map(data.nodes.map((node) => [node.name, node]))
+  const maxLinkCount = Math.max(...data.links.map((link) => link.count), 1)
+
   return (
     <PanelCard className="min-w-0 border-violet-300/12">
-      <h2 className="mb-4 text-lg font-semibold text-white md:text-xl">
-        校內合著情形
-      </h2>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-white md:text-xl">
+          校內合著情形
+        </h2>
+      </div>
 
-      {selectedTeacher ? (
-        <div className="min-w-0 h-[360px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              layout="vertical"
-              margin={{ top: 4, right: 10, left: 10, bottom: 4 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" />
-              <XAxis
-                type="number"
-                allowDecimals={false}
-                tick={{ fill: "#cbd5e1", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                width={180}
-                tick={{ fill: "#e2e8f0", fontSize: 13 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                content={<CountOnlyTooltip />}
-                cursor={{ fill: "rgba(148, 163, 184, 0.08)" }}
-                contentStyle={{
-                  backgroundColor: "rgba(2, 6, 23, 0.92)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "18px",
-                  color: "#fff",
-                }}
-              />
-              <Bar dataKey="value" radius={[0, 12, 12, 0]} barSize={26}>
-                {data.map((entry, index) => (
-                  <Cell
-                    key={`collaboration-${entry.name}-${index}`}
-                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+      {selectedTeacher && data.nodes.length ? (
+        <div className="min-w-0 h-[420px] w-full overflow-hidden rounded-2xl border border-white/6 bg-white/[0.035]">
+          <svg viewBox="0 0 720 420" className="h-full w-full" role="img" aria-label="校內合著關聯圖">
+            <defs>
+              <filter id="paperNodeGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {data.links.map((link) => {
+              const source = nodeMap.get(link.source)
+              const target = nodeMap.get(link.target)
+              if (!source || !target) return null
+
+              const deltaX = target.x - source.x
+              const deltaY = target.y - source.y
+              const distance = Math.hypot(deltaX, deltaY) || 1
+              const unitX = deltaX / distance
+              const unitY = deltaY / distance
+              const sourceX = source.x + unitX * source.radius
+              const sourceY = source.y + unitY * source.radius
+              const targetX = target.x - unitX * target.radius
+              const targetY = target.y - unitY * target.radius
+              const isSelectedLink =
+                !!selectedTeacher &&
+                (link.source === selectedTeacher || link.target === selectedTeacher)
+
+              return (
+                <g key={`${link.source}-${link.target}`}>
+                  <line
+                    x1={sourceX}
+                    y1={sourceY}
+                    x2={targetX}
+                    y2={targetY}
+                    stroke={isSelectedLink ? "rgba(52,211,153,0.84)" : "rgba(148,163,184,0.34)"}
+                    strokeWidth={Math.max(1.25, (link.count / maxLinkCount) * 7)}
+                    strokeLinecap="round"
                   />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+                  <title>{`${link.source} - ${link.target}: ${link.count} 篇`}</title>
+                </g>
+              )
+            })}
+
+            {data.nodes.map((node) => {
+              const isSelected = selectedTeacher === node.name
+
+              return (
+                <g key={node.name} transform={`translate(${node.x} ${node.y})`}>
+                  <circle
+                    r={node.radius + 7}
+                    fill={node.color}
+                    opacity={isSelected ? 0.22 : 0.1}
+                    filter="url(#paperNodeGlow)"
+                  />
+                  <circle
+                    r={node.radius}
+                    fill={node.color}
+                    opacity={isSelected ? 1 : 0.92}
+                    stroke={isSelected ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.28)"}
+                    strokeWidth={isSelected ? 3 : 1.4}
+                  />
+                  <text
+                    y={node.radius + 18}
+                    textAnchor="middle"
+                    className="fill-slate-100 text-[13px] font-semibold"
+                  >
+                    {shortenLabel(node.name, 8)}
+                  </text>
+                  <text y={7} textAnchor="middle" className="fill-white text-[18px] font-bold">
+                    {node.papers}
+                  </text>
+                  <title>{`${node.name}: ${node.papers} 篇`}</title>
+                </g>
+              )
+            })}
+          </svg>
         </div>
       ) : (
         <div className="flex h-full min-h-[404px] items-center justify-center rounded-2xl border border-white/6 bg-white/[0.04] px-6 text-center text-sm leading-7 text-slate-300">
-          選擇某位教師後，這裡會顯示該教師的校內合著情形。
+          {selectedTeacher
+            ? "目前條件下沒有可顯示的校內合著資料。"
+            : "選擇某位教師後，這裡會顯示該教師的校內合著情形。"}
         </div>
       )}
     </PanelCard>
@@ -694,26 +761,88 @@ function filterRecordsByPaperFilters(records: PaperRecord[], filters: PaperFilte
   })
 }
 
-function getCollaborationData(
+function getCollaborationGraphData(
   publications: PaperPublication[],
-  selectedTeacher: string
-) {
-  const counts = new Map<string, number>()
+  selectedTeacher: string,
+  limit = 18
+): CollaborationGraphData {
+  const nodeCounts = new Map<string, number>()
+  const linkCounts = new Map<string, { source: string; target: string; count: number }>()
+  const collaborationPublications = publications.filter(
+    (publication) =>
+      publication.teacherNames.length > 1 &&
+      (!selectedTeacher || publication.teacherNames.includes(selectedTeacher))
+  )
 
-  publications.forEach((publication) => {
-    if (!publication.teacherNames.includes(selectedTeacher)) return
+  collaborationPublications.forEach((publication) => {
+    const teachers = [...publication.teacherNames].sort((a, b) =>
+      a.localeCompare(b, "zh-Hant")
+    )
 
-    publication.teacherNames
-      .filter((teacher) => teacher !== selectedTeacher)
-      .forEach((teacher) => {
-        counts.set(teacher, (counts.get(teacher) ?? 0) + 1)
-      })
+    teachers.forEach((teacher) => {
+      nodeCounts.set(teacher, (nodeCounts.get(teacher) ?? 0) + 1)
+    })
+
+    for (let sourceIndex = 0; sourceIndex < teachers.length; sourceIndex += 1) {
+      for (let targetIndex = sourceIndex + 1; targetIndex < teachers.length; targetIndex += 1) {
+        const source = teachers[sourceIndex]
+        const target = teachers[targetIndex]
+
+        if (selectedTeacher && source !== selectedTeacher && target !== selectedTeacher) {
+          continue
+        }
+
+        const key = `${source}::${target}`
+        const current = linkCounts.get(key) ?? { source, target, count: 0 }
+        current.count += 1
+        linkCounts.set(key, current)
+      }
+    }
   })
 
-  return Array.from(counts.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 10)
+  const rankedNames = Array.from(nodeCounts.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh-Hant"))
+    .map(([name]) => name)
+
+  const displayNames = selectedTeacher
+    ? [selectedTeacher, ...rankedNames.filter((name) => name !== selectedTeacher).slice(0, limit - 1)]
+    : rankedNames.slice(0, limit)
+  const displayNameSet = new Set(displayNames)
+  const displayLinks = Array.from(linkCounts.values())
+    .filter((link) => displayNameSet.has(link.source) && displayNameSet.has(link.target))
+    .sort((a, b) => b.count - a.count)
+
+  const centerX = 360
+  const centerY = 206
+  const orbitRadius = 145
+  const maxPapers = Math.max(...displayNames.map((name) => nodeCounts.get(name) ?? 0), 1)
+  const orbitNames = selectedTeacher ? displayNames.filter((name) => name !== selectedTeacher) : displayNames
+
+  const nodes = displayNames.map((name, index) => {
+    const papers = nodeCounts.get(name) ?? 0
+    const isSelected = selectedTeacher === name
+    const orbitIndex = selectedTeacher ? orbitNames.indexOf(name) : index
+    const angle =
+      selectedTeacher && isSelected
+        ? 0
+        : -Math.PI / 2 + (Math.PI * 2 * orbitIndex) / Math.max(orbitNames.length, 1)
+    const x = selectedTeacher && isSelected ? centerX : centerX + Math.cos(angle) * orbitRadius
+    const y = selectedTeacher && isSelected ? centerY : centerY + Math.sin(angle) * orbitRadius
+
+    return {
+      name,
+      papers,
+      x,
+      y,
+      radius: 15 + Math.sqrt(papers / maxPapers) * 24,
+      color: CHART_COLORS[index % CHART_COLORS.length],
+    }
+  })
+
+  return {
+    nodes,
+    links: displayLinks,
+  }
 }
 
 export default function PaperPublicationsDashboard({ records }: Props) {
@@ -834,11 +963,8 @@ export default function PaperPublicationsDashboard({ records }: Props) {
     [filteredPublications]
   )
 
-  const collaborationData = useMemo(
-    () =>
-      filters.teacherName
-        ? getCollaborationData(filteredPublications, filters.teacherName)
-        : [],
+  const collaborationGraphData = useMemo(
+    () => getCollaborationGraphData(filteredPublications, filters.teacherName),
     [filteredPublications, filters.teacherName]
   )
 
@@ -1139,8 +1265,8 @@ export default function PaperPublicationsDashboard({ records }: Props) {
           </section>
 
           <section className="grid gap-4 xl:grid-cols-2">
-            <CollaborationChart
-              data={collaborationData}
+            <CollaborationNetworkChart
+              data={collaborationGraphData}
               selectedTeacher={filters.teacherName}
             />
 

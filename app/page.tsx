@@ -17,18 +17,18 @@ const dashboards = [
     accent: "#4fd1c5",
   },
   {
-    href: "/papers",
-    title: "論文發表",
-    subtitle: "檢視期刊論文、收錄分類、作者角色與合著情形。",
-    icon: BookOpenText,
-    accent: "#60a5fa",
-  },
-  {
     href: "/teaching",
     title: "教學精進",
     subtitle: "分析教學獎勵主類、次類、細項與教師參與情形。",
     icon: GraduationCap,
     accent: "#f59e0b",
+  },
+  {
+    href: "/papers",
+    title: "論文發表",
+    subtitle: "檢視期刊論文、收錄分類、作者角色與合著情形。",
+    icon: BookOpenText,
+    accent: "#60a5fa",
   },
   {
     href: "/projects",
