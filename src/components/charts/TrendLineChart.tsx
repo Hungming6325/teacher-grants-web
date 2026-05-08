@@ -24,6 +24,8 @@ type TrendLineChartProps = {
   selectedSeriesKey?: string
   onSelectSeries?: (name: string) => void
   action?: ReactNode
+  colorMap?: Record<string, string>
+  seriesOrder?: string[]
 }
 
 type TooltipPayloadItem = {
@@ -102,6 +104,8 @@ export default function TrendLineChart({
   selectedSeriesKey = "",
   onSelectSeries,
   action,
+  colorMap,
+  seriesOrder = [],
 }: TrendLineChartProps) {
   const [hoveredLegendKey, setHoveredLegendKey] = useState<string | null>(null)
   const [lockedLegendKey, setLockedLegendKey] = useState<string | null>(null)
@@ -109,12 +113,23 @@ export default function TrendLineChart({
   const activeLegendKey = selectedSeriesKey || lockedLegendKey || hoveredLegendKey
 
   const seriesKeys = useMemo(() => {
-    return Array.from(
+    const keys = Array.from(
       new Set(
         data.flatMap((row) => Object.keys(row).filter((key) => key !== "year"))
       )
     )
-  }, [data])
+
+    if (seriesOrder.length === 0) return keys
+
+    const orderMap = new Map(seriesOrder.map((key, index) => [key, index]))
+    return keys.sort((a, b) => {
+      const aOrder = orderMap.get(a) ?? Number.MAX_SAFE_INTEGER
+      const bOrder = orderMap.get(b) ?? Number.MAX_SAFE_INTEGER
+
+      if (aOrder !== bOrder) return aOrder - bOrder
+      return a.localeCompare(b, "zh-Hant")
+    })
+  }, [data, seriesOrder])
 
   const title =
     mode === "teacher"
@@ -168,6 +183,7 @@ export default function TrendLineChart({
             {seriesKeys.map((key, index) => {
               const isActive = !activeLegendKey || activeLegendKey === key
               const isHidden = !!lockedLegendKey && lockedLegendKey !== key
+              const color = colorMap?.[key] ?? COLORS[index % COLORS.length]
 
               return (
                 <Line
@@ -175,7 +191,7 @@ export default function TrendLineChart({
                   type="monotone"
                   dataKey={key}
                   name={key}
-                  stroke={COLORS[index % COLORS.length]}
+                  stroke={color}
                   strokeWidth={activeLegendKey === key ? 3.5 : 2.25}
                   strokeOpacity={isActive ? 1 : 0.16}
                   hide={isHidden}
@@ -192,6 +208,7 @@ export default function TrendLineChart({
       <div className="mt-5 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2">
         {seriesKeys.map((key, index) => {
           const isActive = !activeLegendKey || activeLegendKey === key
+          const color = colorMap?.[key] ?? COLORS[index % COLORS.length]
 
           return (
             <button
@@ -217,7 +234,7 @@ export default function TrendLineChart({
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{
-                  backgroundColor: COLORS[index % COLORS.length],
+                  backgroundColor: color,
                   opacity: isActive ? 1 : 0.3,
                 }}
               />

@@ -26,9 +26,10 @@ type Props = {
   selectedName?: string
   onSelect?: (name: string) => void
   action?: ReactNode
+  colorMap?: Record<string, string>
 }
 
-const COLORS = [
+export const SUBCATEGORY_CHART_COLORS = [
   "#4fd1c5",
   "#f59e0b",
   "#60a5fa",
@@ -48,6 +49,7 @@ export default function SubcategoryBarChart({
   selectedName = "",
   onSelect,
   action,
+  colorMap,
 }: Props) {
   const chartHeight =
     mode === "teacher"
@@ -125,7 +127,12 @@ export default function SubcategoryBarChart({
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${entry.name}-${index}`}
-                  fill={COLORS[index % COLORS.length]}
+                  fill={
+                    colorMap?.[entry.name] ??
+                    SUBCATEGORY_CHART_COLORS[
+                      index % SUBCATEGORY_CHART_COLORS.length
+                    ]
+                  }
                   opacity={selectedName && selectedName !== entry.name ? 0.36 : 1}
                   cursor={onSelect ? "pointer" : "default"}
                   onClick={() => onSelect?.(entry.name)}

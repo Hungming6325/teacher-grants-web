@@ -9,7 +9,9 @@ import {
   useState,
 } from "react"
 import CountUp from "react-countup"
-import SubcategoryBarChart from "../charts/SubcategoryBarChart"
+import SubcategoryBarChart, {
+  SUBCATEGORY_CHART_COLORS,
+} from "../charts/SubcategoryBarChart"
 import TrendLineChart from "../charts/TrendLineChart"
 import DashboardTabs from "../ui/DashboardTabs"
 import PanelCard from "../ui/PanelCard"
@@ -173,6 +175,19 @@ export default function TeacherGrantsDashboard({ records }: Props) {
       "subcategory"
     )
   }, [trendSourceRecords])
+
+  const subcategoryColorMap = useMemo(() => {
+    return chartData.reduce<Record<string, string>>((map, item, index) => {
+      map[item.name] =
+        SUBCATEGORY_CHART_COLORS[index % SUBCATEGORY_CHART_COLORS.length]
+      return map
+    }, {})
+  }, [chartData])
+
+  const subcategorySeriesOrder = useMemo(
+    () => chartData.map((item) => item.name),
+    [chartData]
+  )
 
   function handleFilterChange(key: keyof GrantFilters, value: string) {
     setFilters((prev) => {
@@ -477,6 +492,7 @@ export default function TeacherGrantsDashboard({ records }: Props) {
               selectedSubcategory={filters.subcategory}
               selectedName={filters.subcategory}
               onSelect={handleChartItemSelect}
+              colorMap={subcategoryColorMap}
               action={
                 filters.subcategory ? (
                   <button
@@ -496,6 +512,8 @@ export default function TeacherGrantsDashboard({ records }: Props) {
               selectedSubcategory={filters.subcategory}
               selectedSeriesKey={filters.subcategory}
               onSelectSeries={handleChartItemSelect}
+              colorMap={subcategoryColorMap}
+              seriesOrder={subcategorySeriesOrder}
               action={
                 filters.subcategory ? (
                   <button
