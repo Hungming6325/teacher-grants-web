@@ -42,6 +42,7 @@ import {
   getTeachingTeachers,
   getTopDepartmentsByPoints,
 } from "../../lib/teaching"
+import { maskPersonName, maskPersonNames } from "../../lib/privacy"
 import {
   TeachingFilters,
   TeachingHierarchySelection,
@@ -109,6 +110,13 @@ function formatAmount(value: number) {
 
 function formatPercentage(value: number) {
   return `(${value.toFixed(2)}%)`
+}
+
+function maskCollaborationLabel(value: string) {
+  return value
+    .split(/\s+(?:\?|×|x)\s+/i)
+    .map((name) => maskPersonName(name))
+    .join(" × ")
 }
 
 function SummaryCard({ title, value, accent, displayValue }: SummaryCardProps) {
@@ -544,7 +552,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
         12,
         effectiveFilters.teacherName || undefined
       ).map((item) => ({
-        name: item.pair,
+        name: maskCollaborationLabel(item.pair),
         count: item.count,
         points: item.points,
       })),
@@ -632,7 +640,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
 
   function handleTeacherSelect(name: string) {
     handleFilterChange("teacherName", name)
-    setTeacherKeyword(name)
+    setTeacherKeyword("")
     setTeacherDropdownOpen(false)
   }
 
@@ -695,7 +703,9 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
                       effectiveFilters.teacherName ? "text-white" : "text-slate-300"
                     }
                   >
-                    {effectiveFilters.teacherName || "全部教師"}
+                    {effectiveFilters.teacherName
+                      ? maskPersonName(effectiveFilters.teacherName)
+                      : "全部教師"}
                   </span>
                   <svg
                     className={`h-5 w-5 text-white transition-transform ${
@@ -752,7 +762,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
                             onClick={() => handleTeacherSelect(teacher.name)}
                             className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
                           >
-                            {teacher.name}
+                            {maskPersonName(teacher.name)}
                           </button>
                         ))
                       ) : (
@@ -1053,7 +1063,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
                         <div>
                           <p className="text-sm text-slate-200">
                             <span className="text-slate-400">教師：</span>
-                            {row.teachers.join("、")}
+                            {maskPersonNames(row.teachers)}
                           </p>
                           <p className="mt-1 text-sm text-slate-200">
                             <span className="text-slate-400">系所：</span>
@@ -1113,7 +1123,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
                       className="flex min-h-[96px] flex-col justify-center rounded-[24px] border border-white/8 bg-white/5 px-4 py-2.5"
                     >
                       <p className="text-sm font-medium text-slate-100">
-                        {item.name}
+                        {maskPersonName(item.name)}
                       </p>
                       <p className="mt-2 text-sm font-medium leading-5 text-cyan-100">
                         {formatAmount(item.amount)}

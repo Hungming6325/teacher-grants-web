@@ -33,6 +33,7 @@ import {
   getTotalAmount,
   getTrendChartData,
 } from "../../lib/stats"
+import { maskPersonName } from "../../lib/privacy"
 import { GrantRecord } from "../../types/grant"
 
 type Props = {
@@ -240,7 +241,7 @@ export default function TeacherGrantsDashboard({ records }: Props) {
 
   function handleTeacherSelect(name: string) {
     handleFilterChange("teacher", name)
-    setTeacherKeyword(name)
+    setTeacherKeyword("")
     setTeacherDropdownOpen(false)
   }
 
@@ -330,7 +331,7 @@ export default function TeacherGrantsDashboard({ records }: Props) {
                   className="flex w-full items-center justify-between rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-left text-sm text-white outline-none transition hover:border-emerald-300 focus:border-emerald-300 md:text-base"
                 >
                   <span className={filters.teacher ? "text-white" : "text-slate-300"}>
-                    {filters.teacher || "全部教師"}
+                    {filters.teacher ? maskPersonName(filters.teacher) : "全部教師"}
                   </span>
                   <svg
                     className={`h-5 w-5 text-white transition-transform ${
@@ -387,7 +388,7 @@ export default function TeacherGrantsDashboard({ records }: Props) {
                             onClick={() => handleTeacherSelect(teacher.name)}
                             className="w-full rounded-xl px-3 py-3 text-left text-sm text-slate-100 transition hover:bg-white/10 md:text-base"
                           >
-                            {teacher.name}
+                            {maskPersonName(teacher.name)}
                           </button>
                         ))
                       ) : (
@@ -556,7 +557,7 @@ export default function TeacherGrantsDashboard({ records }: Props) {
                       className="flex min-h-[96px] flex-col justify-center rounded-[24px] border border-white/8 bg-white/5 px-4 py-2.5"
                     >
                       <p className="text-sm font-medium text-slate-100">
-                        {item.name}
+                        {maskPersonName(item.name)}
                       </p>
                       <p className="mt-2 text-sm font-medium leading-5 text-cyan-100">
                         {formatAmount(item.amount)}
