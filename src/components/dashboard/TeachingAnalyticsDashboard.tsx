@@ -40,6 +40,7 @@ import {
   getTeachingDepartments,
   getTeachingSummary,
   getTeachingTeachers,
+  getTeachingYears,
   getTopDepartmentsByPoints,
 } from "../../lib/teaching"
 import { maskPersonName, maskPersonNames } from "../../lib/privacy"
@@ -375,18 +376,39 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
     return () => document.removeEventListener("mousedown", onPointerDownOutside)
   }, [])
 
-  const departments = useMemo(() => getTeachingDepartments(records), [records])
+  const years = useMemo(() => getTeachingYears(records), [records])
+
+  const departmentSourceRecords = useMemo(
+    () =>
+      records.filter(
+        (record) => !filters.year || record.year === filters.year
+      ),
+    [records, filters.year]
+  )
+
+  const departments = useMemo(
+    () => getTeachingDepartments(departmentSourceRecords),
+    [departmentSourceRecords]
+  )
 
   const teacherSourceRecords = useMemo(
     () =>
       records.filter(
         (record) =>
+          (!filters.year || record.year === filters.year) &&
           (!filters.department || record.department === filters.department) &&
           (!filters.category1 || record.category1 === filters.category1) &&
           (!filters.category2 || record.category2 === filters.category2) &&
           (!filters.category3 || record.category3 === filters.category3)
       ),
-    [records, filters.department, filters.category1, filters.category2, filters.category3]
+    [
+      records,
+      filters.year,
+      filters.department,
+      filters.category1,
+      filters.category2,
+      filters.category3,
+    ]
   )
 
   const teachers = useMemo<TeacherSearchItem[]>(
@@ -399,25 +421,41 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
 
     return teachers.filter((teacher) => teacher.name.includes(keyword))
   }, [teachers, teacherSearch])
-  const category1Options = useMemo(() => getTeachingCategory1(records), [records])
+  const category1Options = useMemo(
+    () => getTeachingCategory1(departmentSourceRecords),
+    [departmentSourceRecords]
+  )
 
   const effectiveFilters = useMemo(() => {
+    const nextDepartment = departments.includes(filters.department)
+      ? filters.department
+      : ""
+    const optionSourceRecords = records.filter(
+      (record) =>
+        (!filters.year || record.year === filters.year) &&
+        (!nextDepartment || record.department === nextDepartment)
+    )
     const nextCategory1 = category1Options.includes(filters.category1) ? filters.category1 : ""
-    const nextCategory2Options = getTeachingCategory2(records, nextCategory1)
+    const nextCategory2Options = getTeachingCategory2(optionSourceRecords, nextCategory1)
     const nextCategory2 = nextCategory2Options.includes(filters.category2) ? filters.category2 : ""
-    const nextCategory3Options = getTeachingCategory3(records, nextCategory1, nextCategory2)
+    const nextCategory3Options = getTeachingCategory3(
+      optionSourceRecords,
+      nextCategory1,
+      nextCategory2
+    )
     const nextCategory3 = nextCategory3Options.includes(filters.category3) ? filters.category3 : ""
     const teacherNames = teachers.map((teacher) => teacher.name)
     const nextTeacher = teacherNames.includes(filters.teacherName) ? filters.teacherName : ""
 
     return {
-      department: filters.department,
+      year: filters.year,
+      department: nextDepartment,
       teacherName: nextTeacher,
       category1: nextCategory1,
       category2: nextCategory2,
       category3: nextCategory3,
     } satisfies TeachingFilters
-  }, [filters, records, category1Options, teachers])
+  }, [filters, records, departments, category1Options, teachers])
 
   const filteredRecords = useMemo(
     () => filterTeachingRecords(records, effectiveFilters),
@@ -614,6 +652,7 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
       const validTeachers = getTeachingTeachers(
         records.filter(
           (record) =>
+            (!next.year || record.year === next.year) &&
             (!next.department || record.department === next.department) &&
             (!next.category1 || record.category1 === next.category1) &&
             (!next.category2 || record.category2 === next.category2) &&
@@ -673,7 +712,27 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
 
         <div className="space-y-4">
           <PanelCard className="relative z-30 overflow-visible border-white/10">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]">
+              <div>
+                <label className="mb-2 block text-sm text-slate-100">年度</label>
+                <select
+                  value={effectiveFilters.year}
+                  onChange={(event) =>
+                    handleFilterChange("year", event.target.value)
+                  }
+                  className="w-full rounded-2xl border border-slate-400/30 bg-white/8 px-4 py-3 text-sm text-white outline-none transition focus:border-sky-300 md:text-base"
+                >
+                  <option value="" className="text-black">
+                    全部年度
+                  </option>
+                  {years.map((year) => (
+                    <option key={year} value={year} className="text-black">
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="mb-2 block text-sm text-slate-100">系所</label>
                 <select

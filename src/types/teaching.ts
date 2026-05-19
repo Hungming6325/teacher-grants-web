@@ -1,4 +1,5 @@
 export type TeachingRecord = {
+  year: string
   applicationId: string
   applicationType: "共同" | "單獨"
   category1: string
@@ -13,6 +14,7 @@ export type TeachingRecord = {
 }
 
 export type TeachingFilters = {
+  year: string
   department: string
   teacherName: string
   category1: string

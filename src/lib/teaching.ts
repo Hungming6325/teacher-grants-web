@@ -9,6 +9,7 @@ import {
 type TeachingCsvRow = Record<string, string>
 
 export const DEFAULT_TEACHING_FILTERS: TeachingFilters = {
+  year: "",
   department: "",
   teacherName: "",
   category1: "",
@@ -72,6 +73,10 @@ function getRowValueByIndex(row: TeachingCsvRow, index: number) {
   return cleanText(values[index])
 }
 
+function getRowValue(row: TeachingCsvRow, key: string, fallbackIndex: number) {
+  return cleanText(row[key]) || getRowValueByIndex(row, fallbackIndex)
+}
+
 export function parseTeachingCsv(csvText: string): TeachingRecord[] {
   const parsed = Papa.parse<TeachingCsvRow>(csvText, {
     header: true,
@@ -84,19 +89,24 @@ export function parseTeachingCsv(csvText: string): TeachingRecord[] {
 
   return parsed.data
     .map((row) => {
-      const applicationId = getRowValueByIndex(row, 0)
-      const applicationTypeRaw = getRowValueByIndex(row, 1)
-      const category1 = getRowValueByIndex(row, 2)
-      const category2 = getRowValueByIndex(row, 3)
-      const category3 = normalizeCategory3(category2, getRowValueByIndex(row, 4))
-      const outcomeSummary = getRowValueByIndex(row, 5)
-      const department = getRowValueByIndex(row, 6)
-      const teacherName = getRowValueByIndex(row, 7)
-      const sharePercent = parseNumber(getRowValueByIndex(row, 8))
-      const points = parseNumber(getRowValueByIndex(row, 9))
-      const amount = parseNumber(getRowValueByIndex(row, 10))
+      const year = getRowValue(row, "年度", 0)
+      const applicationId = getRowValue(row, "申請編號", 1)
+      const applicationTypeRaw = getRowValue(row, "申請型態", 2)
+      const category1 = getRowValue(row, "獎勵事項_1", 3)
+      const category2 = getRowValue(row, "獎勵事項_2", 4)
+      const category3 = normalizeCategory3(
+        category2,
+        getRowValue(row, "獎勵事項_3", 5)
+      )
+      const outcomeSummary = getRowValue(row, "具體成效說明", 6)
+      const department = getRowValue(row, "系所", 7)
+      const teacherName = getRowValue(row, "姓名", 8)
+      const sharePercent = parseNumber(getRowValue(row, "百分比", 9))
+      const points = parseNumber(getRowValue(row, "點數", 10))
+      const amount = parseNumber(getRowValue(row, "金額", 11))
 
       return {
+        year,
         applicationId,
         applicationType:
           applicationTypeRaw === "共同" ? "共同" : "單獨",
@@ -113,6 +123,7 @@ export function parseTeachingCsv(csvText: string): TeachingRecord[] {
     })
     .filter(
       (row) =>
+        row.year &&
         row.applicationId &&
         row.category1 &&
         row.category2 &&
@@ -120,6 +131,12 @@ export function parseTeachingCsv(csvText: string): TeachingRecord[] {
         row.department &&
         row.teacherName
     )
+}
+
+export function getTeachingYears(records: TeachingRecord[]) {
+  return uniqueSorted(records.map((record) => record.year)).sort((a, b) =>
+    b.localeCompare(a, "zh-Hant")
+  )
 }
 
 export function getTeachingDepartments(records: TeachingRecord[]) {
@@ -163,6 +180,7 @@ export function filterTeachingRecords(
   filters: TeachingFilters
 ) {
   return records.filter((record) => {
+    const matchYear = !filters.year || record.year === filters.year
     const matchDepartment =
       !filters.department || record.department === filters.department
     const matchTeacher =
@@ -175,6 +193,7 @@ export function filterTeachingRecords(
       !filters.category3 || record.category3 === filters.category3
 
     return (
+      matchYear &&
       matchDepartment &&
       matchTeacher &&
       matchCategory1 &&
