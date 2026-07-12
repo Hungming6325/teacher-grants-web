@@ -1,17 +1,19 @@
 import * as Papa from "papaparse"
 import { GrantRecord } from "../types/grant"
 
-type CsvRow = {
-  年度?: string
-  系所?: string
-  項目?: string
-  次項目?: string
-  教師姓名?: string
-  獎助金額?: string
+type CsvRow = Record<string, string | undefined>
+
+function cleanText(value: string | undefined) {
+  return (value ?? "").replace(/^\ufeff/u, "").trim()
 }
 
 function normalizeAmount(rawAmount: string | undefined) {
-  return Number((rawAmount ?? "0").replace(/,/g, "").trim())
+  return Number(cleanText(rawAmount).replace(/,/g, ""))
+}
+
+function getRowValue(row: CsvRow, key: string, fallbackIndex: number) {
+  const values = Object.values(row)
+  return cleanText(row[key]) || cleanText(values[fallbackIndex])
 }
 
 export function parseGrantCsv(csvText: string): GrantRecord[] {
@@ -21,17 +23,17 @@ export function parseGrantCsv(csvText: string): GrantRecord[] {
   })
 
   if (parsed.errors.length > 0) {
-    console.error("Papa Parse errors:", parsed.errors)
+    console.error("Grant CSV parse errors:", parsed.errors)
   }
 
   return parsed.data
     .map((row) => ({
-      year: row.年度?.trim() ?? "",
-      department: row.系所?.trim() ?? "",
-      category: row.項目?.trim() ?? "",
-      subcategory: row.次項目?.trim() ?? "",
-      teacher: row.教師姓名?.trim() ?? "",
-      amount: normalizeAmount(row.獎助金額),
+      year: getRowValue(row, "年度", 0),
+      department: getRowValue(row, "系所", 1),
+      category: getRowValue(row, "項目", 2),
+      subcategory: getRowValue(row, "次項目", 3),
+      teacher: getRowValue(row, "教師姓名", 4),
+      amount: normalizeAmount(getRowValue(row, "獎助金額", 5)),
     }))
     .filter(
       (row) =>
@@ -42,20 +44,4 @@ export function parseGrantCsv(csvText: string): GrantRecord[] {
         row.teacher &&
         Number.isFinite(row.amount)
     )
-}
-
-export async function loadGrantCsv(): Promise<GrantRecord[]> {
-  const response = await fetch("/data/grants_112_114.csv")
-
-  if (!response.ok) {
-    throw new Error(`CSV 載入失敗：${response.status} ${response.statusText}`)
-  }
-
-  const csvText = await response.text()
-
-  if (!csvText.trim()) {
-    throw new Error("CSV 內容為空白")
-  }
-
-  return parseGrantCsv(csvText)
 }

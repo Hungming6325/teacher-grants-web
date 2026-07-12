@@ -28,6 +28,8 @@ src/types/              型別定義
 data/                   原始資料檔
 ```
 
+資料檔與頁面對照請見 `data/README.md`。
+
 ## 資料檔
 
 - `data/grants_112_114.csv`：獎補助資料
