@@ -3,7 +3,7 @@ import path from "node:path"
 import { parsePatentCsv, parseTransferCsv } from "./research-assets"
 
 export async function loadPatentCsvFromDisk() {
-  const filePath = path.join(process.cwd(), "data", "patient.csv")
+  const filePath = path.join(process.cwd(), "data", "patent.csv")
   const csvText = await fs.readFile(filePath, "utf8")
 
   return parsePatentCsv(csvText)
