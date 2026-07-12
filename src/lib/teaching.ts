@@ -77,6 +77,10 @@ function getRowValue(row: TeachingCsvRow, key: string, fallbackIndex: number) {
   return cleanText(row[key]) || getRowValueByIndex(row, fallbackIndex)
 }
 
+function getApplicationKey(record: TeachingRecord) {
+  return `${record.year}::${record.applicationId}`
+}
+
 export function parseTeachingCsv(csvText: string): TeachingRecord[] {
   const parsed = Papa.parse<TeachingCsvRow>(csvText, {
     header: true,
@@ -204,11 +208,11 @@ export function filterTeachingRecords(
 }
 
 export function getTeachingSummary(records: TeachingRecord[]): TeachingSummary {
-  const applicationIds = new Set(records.map((record) => record.applicationId))
+  const applicationIds = new Set(records.map((record) => getApplicationKey(record)))
   const collaborativeIds = new Set(
     records
       .filter((record) => record.applicationType === "共同")
-      .map((record) => record.applicationId)
+      .map((record) => getApplicationKey(record))
   )
 
   return {
@@ -332,9 +336,10 @@ export function getTeachingCollaborations(
   const grouped = new Map<string, TeachingRecord[]>()
 
   records.forEach((record) => {
-    const current = grouped.get(record.applicationId) ?? []
+    const applicationKey = getApplicationKey(record)
+    const current = grouped.get(applicationKey) ?? []
     current.push(record)
-    grouped.set(record.applicationId, current)
+    grouped.set(applicationKey, current)
   })
 
   const pairs = new Map<string, { pair: string; count: number; points: number }>()
@@ -381,16 +386,18 @@ export function getTeachingApplicationRows(records: TeachingRecord[]) {
   const grouped = new Map<string, TeachingRecord[]>()
 
   records.forEach((record) => {
-    const current = grouped.get(record.applicationId) ?? []
+    const applicationKey = getApplicationKey(record)
+    const current = grouped.get(applicationKey) ?? []
     current.push(record)
-    grouped.set(record.applicationId, current)
+    grouped.set(applicationKey, current)
   })
 
   return Array.from(grouped.entries())
-    .map(([applicationId, group]) => {
+    .map(([, group]) => {
       const first = group[0]
       return {
-        applicationId,
+        applicationId: first.applicationId,
+        year: first.year,
         applicationType: first.applicationType,
         category1: first.category1,
         category2: first.category2,

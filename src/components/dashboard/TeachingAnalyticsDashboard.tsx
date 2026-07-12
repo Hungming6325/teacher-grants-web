@@ -598,14 +598,14 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
   )
 
   const detailApplicationIds = useMemo(
-    () => new Set(detailScopedRecords.map((record) => record.applicationId)),
+    () => new Set(detailScopedRecords.map((record) => `${record.year}::${record.applicationId}`)),
     [detailScopedRecords]
   )
 
   const detailDisplayRecords = useMemo(
     () =>
       collaborationScopedRecords.filter((record) =>
-        detailApplicationIds.has(record.applicationId)
+        detailApplicationIds.has(`${record.year}::${record.applicationId}`)
       ),
     [collaborationScopedRecords, detailApplicationIds]
   )
@@ -1100,10 +1100,13 @@ export default function TeachingAnalyticsDashboard({ records }: Props) {
                 {detailRows.length ? (
                   detailRows.map((row) => (
                     <div
-                      key={`${row.applicationId}-${row.category3}-${row.teachers.join("-")}`}
+                      key={`${row.year}-${row.applicationId}-${row.category3}-${row.teachers.join("-")}`}
                       className="rounded-[24px] border border-white/8 bg-white/5 p-4"
                     >
                       <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs text-emerald-100">
+                          {row.year}年度
+                        </span>
                         <span className="rounded-full border border-white/10 bg-slate-950/40 px-3 py-1 text-xs text-slate-200">
                           {row.teachers.length > 1 ? "共同" : "單獨"}
                         </span>

@@ -6,7 +6,7 @@ export async function loadTeachingCsvFromDisk() {
   const filePath = path.join(
     process.cwd(),
     "data",
-    "teaching_112_114.csv"
+    "teaching_awards_114_115.csv"
   )
   const csvText = await fs.readFile(filePath, "utf8")
 
